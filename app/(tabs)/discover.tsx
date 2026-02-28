@@ -15,7 +15,6 @@ import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { colors, typography, spacing, radius, layout } from '../../constants/theme';
 import { DEMO_PRODUCTS, CATEGORIES } from '../../constants/mockData';
 import { useAuth } from '../../contexts/AuthContext';
-import { useCart } from '../../contexts/CartContext';
 import { useLocalization } from '../../contexts/LocalizationContext';
 import { fetchProducts, type Product } from '../../services/api';
 import { getCachedProducts, setCachedProducts } from '../../services/productCache';
@@ -27,7 +26,6 @@ import SectionHeader from '../../components/ui/SectionHeader';
 
 export default function DiscoverScreen() {
   const { user, token } = useAuth();
-  const { itemCount } = useCart();
   const { t } = useLocalization();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -101,14 +99,7 @@ export default function DiscoverScreen() {
       >
         {/* Header */}
         <Animated.View entering={FadeInDown.duration(600)} style={styles.header}>
-          <TouchableOpacity style={styles.headerBtn} onPress={() => router.push('/(tabs)/bag')}>
-            <Ionicons name="bag-outline" size={22} color={colors.text.primary} />
-            {itemCount > 0 && (
-              <View style={styles.cartBadge}>
-                <Text style={styles.cartBadgeText}>{itemCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          <View style={{ width: 40 }} />
 
           <View style={styles.headerCenter}>
             <Text style={styles.brandName}>GENOSYS</Text>
@@ -235,9 +226,6 @@ const styles = StyleSheet.create({
   scrollContent: { paddingHorizontal: layout.screenPadding },
 
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.md },
-  headerBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', position: 'relative' as const },
-  cartBadge: { position: 'absolute' as const, top: 2, right: 0, backgroundColor: colors.gold[500], width: 18, height: 18, borderRadius: 9, alignItems: 'center' as const, justifyContent: 'center' as const },
-  cartBadgeText: { ...typography.caption2, color: colors.text.inverse, fontSize: 10, fontWeight: '700' as const },
   headerCenter: { alignItems: 'center' },
   brandName: { ...typography.title2, letterSpacing: 4, fontSize: 24 },
   brandTagline: { ...typography.caption1, color: colors.gold[500], marginTop: 2, letterSpacing: 0.5 },
