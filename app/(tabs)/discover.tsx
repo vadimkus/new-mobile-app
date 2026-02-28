@@ -48,7 +48,7 @@ export default function DiscoverScreen() {
       >
         {/* Header */}
         <Animated.View entering={FadeInDown.duration(600)} style={styles.header}>
-          <TouchableOpacity style={styles.headerBtn}>
+          <TouchableOpacity style={styles.headerBtn} onPress={() => router.push('/profile')}>
             <Ionicons name="menu-outline" size={24} color={colors.text.primary} />
           </TouchableOpacity>
 
@@ -57,7 +57,7 @@ export default function DiscoverScreen() {
             <Text style={styles.brandTagline}>Premium Skincare & Beauty</Text>
           </View>
 
-          <TouchableOpacity style={styles.avatarBtn}>
+          <TouchableOpacity style={styles.avatarBtn} onPress={() => router.push('/profile')}>
             <Text style={styles.avatarText}>V</Text>
           </TouchableOpacity>
         </Animated.View>
