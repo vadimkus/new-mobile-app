@@ -12,11 +12,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { colors, typography, spacing, radius, layout } from '../../constants/theme';
-import { DEMO_PRODUCTS, CATEGORIES } from '../../constants/mockData';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCart } from '../../contexts/CartContext';
 import { useLocalization } from '../../contexts/LocalizationContext';
-import { fetchProducts, type Product } from '../../services/api';
+import { fetchProducts, fetchCategories, type Product, type CategoryItem } from '../../services/api';
 import { getCachedProducts, setCachedProducts } from '../../services/productCache';
 import { getRecentlyViewed } from '../../services/recentlyViewed';
 import ProductHeroCard from '../../components/product/ProductHeroCard';
@@ -24,12 +25,27 @@ import ProductMiniCard from '../../components/product/ProductMiniCard';
 import CategoryIcon from '../../components/ui/CategoryIcon';
 import SectionHeader from '../../components/ui/SectionHeader';
 
+const LOCAL_IMAGE_OVERRIDES: Record<string, any> = {
+  'eye contour': require('../../assets/images/serum_cut.png'),
+};
+
+function getLocalImage(name: string): any | undefined {
+  const key = Object.keys(LOCAL_IMAGE_OVERRIDES).find(
+    (k) => name.toLowerCase().includes(k),
+  );
+  return key ? LOCAL_IMAGE_OVERRIDES[key] : undefined;
+}
+
 export default function DiscoverScreen() {
   const { user, token } = useAuth();
+  const { addItem } = useCart();
   const { t } = useLocalization();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [products, setProducts] = useState<any[]>(DEMO_PRODUCTS);
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([
+    { id: 'all', label: 'All', icon: 'apps-outline' },
+  ]);
   const [apiLoaded, setApiLoaded] = useState(false);
   const [loadingApi, setLoadingApi] = useState(true);
   const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>([]);
@@ -37,7 +53,6 @@ export default function DiscoverScreen() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // Try cache first for instant display
       const cached = await getCachedProducts();
       if (!cancelled && cached && cached.length > 0) {
         setProducts(cached);
@@ -46,14 +61,19 @@ export default function DiscoverScreen() {
 
       try {
         const userCtx = user ? { id: user.id, token: token ?? undefined } : undefined;
-        const data = await fetchProducts(userCtx);
+        const [data, cats] = await Promise.all([
+          fetchProducts(userCtx),
+          fetchCategories(),
+        ]);
         if (!cancelled && data.length > 0) {
           setProducts(data);
           setApiLoaded(true);
           setCachedProducts(data);
         }
+        if (!cancelled && cats.length > 0) {
+          setCategories(cats);
+        }
       } catch {
-        // If API fails and we have no cache, keep demo data
       } finally {
         if (!cancelled) setLoadingApi(false);
       }
@@ -72,11 +92,25 @@ export default function DiscoverScreen() {
     .slice(0, 6);
 
   const filteredProducts = products.filter((p) => {
-    if (activeCategory !== 'all') {
-      if (p.category?.toLowerCase() !== activeCategory) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const words = q.split(/\s+/);
+      const haystack = [
+        p.name,
+        p.description,
+        p.category,
+        p.keyBenefits,
+        p.skinType,
+        p.formulation,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return words.every((w) => haystack.includes(w));
     }
-    if (searchQuery) {
-      return p.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    if (activeCategory !== 'all') {
+      const cat = (p.category || '').toLowerCase();
+      if (!cat.includes(activeCategory) && activeCategory !== cat) return false;
     }
     return true;
   });
@@ -87,6 +121,20 @@ export default function DiscoverScreen() {
   const handleProductPress = useCallback((id: string) => {
     router.push(`/product/${id}`);
   }, []);
+
+  const handleAddToBag = useCallback((id: string) => {
+    const p = products.find((pr) => String(pr.id) === id);
+    if (!p) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    addItem({
+      id: String(p.id),
+      name: p.name,
+      price: p.salePrice ?? p.price,
+      salePrice: p.salePrice && p.salePrice !== p.price ? p.salePrice : undefined,
+      currency: p.currency || 'AED',
+      imageUrl: p.imageUrl || p.images?.[0],
+    });
+  }, [products, addItem]);
 
   const avatarInitial = user?.name?.[0]?.toUpperCase() || 'G';
 
@@ -116,7 +164,7 @@ export default function DiscoverScreen() {
           <Ionicons name="search-outline" size={18} color={colors.text.tertiary} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search products..."
+            placeholder={t('discover.searchPlaceholder')}
             placeholderTextColor={colors.text.tertiary}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -132,11 +180,11 @@ export default function DiscoverScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesScroll}
           >
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <CategoryIcon
                 key={cat.id}
                 label={cat.label}
-                icon={cat.icon}
+                icon={cat.icon as any}
                 isActive={activeCategory === cat.id}
                 onPress={() => setActiveCategory(cat.id)}
               />
@@ -144,11 +192,22 @@ export default function DiscoverScreen() {
           </ScrollView>
         </Animated.View>
 
-        {/* Loading indicator */}
+        {/* Loading state */}
         {loadingApi && !apiLoaded && (
-          <View style={styles.loadingRow}>
-            <ActivityIndicator size="small" color={colors.gold[500]} />
-            <Text style={styles.loadingText}>Loading products...</Text>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.gold[500]} />
+            <Text style={styles.loadingText}>{t('discover.loadingProducts')}</Text>
+          </View>
+        )}
+
+        {/* Empty state after load */}
+        {!loadingApi && filteredProducts.length === 0 && (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="cube-outline" size={48} color={colors.text.muted} />
+            <Text style={styles.emptyTitle}>{t('discover.noProductsFound')}</Text>
+            <Text style={styles.emptySubtitle}>
+              {searchQuery ? t('discover.tryDifferentSearch') : t('discover.checkBackSoon')}
+            </Text>
           </View>
         )}
 
@@ -164,10 +223,12 @@ export default function DiscoverScreen() {
               tagline={heroProduct.tagline || heroProduct.description?.slice(0, 60)}
               price={heroProduct.salePrice ?? heroProduct.price}
               imageUrl={heroProduct.imageUrl || heroProduct.images?.[0]}
+              localImageSource={getLocalImage(heroProduct.name)}
               badge={heroProduct.badge}
               rating={heroProduct.rating}
               gradientColors={heroProduct.gradientColors}
               onPress={handleProductPress}
+              onAddToBag={handleAddToBag}
             />
           </Animated.View>
         )}
@@ -175,7 +236,7 @@ export default function DiscoverScreen() {
         {/* Product Grid */}
         {gridProducts.length > 0 && (
           <Animated.View entering={FadeInDown.duration(700).delay(450)}>
-            <SectionHeader title="Popular" actionLabel="See All" onAction={() => setActiveCategory('all')} />
+            <SectionHeader title={t('discover.popular')} actionLabel={t('discover.seeAll')} onAction={() => setActiveCategory('all')} />
             <View style={styles.grid}>
               {gridProducts.map((product, index) => (
                 <Animated.View
@@ -187,7 +248,9 @@ export default function DiscoverScreen() {
                     name={product.name}
                     price={product.salePrice ?? product.price}
                     imageUrl={product.imageUrl || product.images?.[0]}
+                    localImageSource={getLocalImage(product.name)}
                     onPress={handleProductPress}
+                    onAddToBag={handleAddToBag}
                   />
                 </Animated.View>
               ))}
@@ -207,7 +270,9 @@ export default function DiscoverScreen() {
                   name={product.name}
                   price={product.salePrice ?? product.price}
                   imageUrl={product.imageUrl || product.images?.[0]}
+                  localImageSource={getLocalImage(product.name)}
                   onPress={handleProductPress}
+                  onAddToBag={handleAddToBag}
                 />
               ))}
             </ScrollView>
@@ -216,6 +281,7 @@ export default function DiscoverScreen() {
 
         <View style={{ height: layout.tabBarHeight + 20 }} />
       </ScrollView>
+
     </SafeAreaView>
   );
 }
@@ -232,13 +298,16 @@ const styles = StyleSheet.create({
   avatarBtn: { width: 36, height: 36, borderRadius: 18, borderWidth: 1.5, borderColor: colors.gold[500], alignItems: 'center', justifyContent: 'center' },
   avatarText: { ...typography.label, color: colors.gold[500], fontSize: 14 },
 
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.glass.light, borderRadius: radius.lg, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, marginBottom: spacing.xl, borderWidth: 1, borderColor: colors.glass.border },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.glass.light, borderRadius: radius.lg, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, marginBottom: spacing.md, borderWidth: 1, borderColor: colors.glass.border, zIndex: 1 },
   searchInput: { flex: 1, ...typography.bodySmall, color: colors.text.primary, marginLeft: spacing.sm, marginRight: spacing.sm },
 
-  categoriesScroll: { paddingBottom: spacing.xl },
+  categoriesScroll: { paddingBottom: spacing.lg, paddingTop: spacing.sm },
 
-  loadingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, marginBottom: spacing.xl },
-  loadingText: { ...typography.caption1, color: colors.text.secondary },
+  loadingContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: spacing.section * 2 },
+  loadingText: { ...typography.bodySmall, color: colors.text.secondary, marginTop: spacing.lg },
+  emptyContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: spacing.section * 2 },
+  emptyTitle: { ...typography.headline, color: colors.text.primary, marginTop: spacing.lg },
+  emptySubtitle: { ...typography.caption1, color: colors.text.secondary, marginTop: spacing.xs },
 
   heroSection: { marginBottom: spacing.xxl },
 

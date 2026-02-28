@@ -1,5 +1,4 @@
 import { Tabs } from 'expo-router';
-import { colors } from '../../constants/theme';
 import GlassTabBar from '../../components/ui/GlassTabBar';
 
 export default function TabLayout() {

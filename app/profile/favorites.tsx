@@ -85,7 +85,7 @@ export default function FavoritesScreen() {
                   <View style={styles.info}>
                     <Text style={styles.name} numberOfLines={2}>{product.name}</Text>
                     <Text style={styles.category}>{product.category}</Text>
-                    <Text style={styles.price}>{product.salePrice ?? product.price} {product.currency || 'AED'}</Text>
+                    <Text style={styles.price}>{Number(product.salePrice ?? product.price).toFixed(2)} {product.currency || 'AED'}</Text>
                   </View>
                   <View style={styles.actions}>
                     <TouchableOpacity

@@ -13,11 +13,13 @@ interface ProductHeroCardProps {
   price: number;
   currency?: string;
   imageUrl: string;
+  localImageSource?: any;
   badge?: string;
   rating?: number;
   gradientColors?: readonly [string, string];
   onPress: (id: string) => void;
   onFavorite?: (id: string) => void;
+  onAddToBag?: (id: string) => void;
   isFavorite?: boolean;
 }
 
@@ -28,11 +30,13 @@ export default function ProductHeroCard({
   price,
   currency = 'AED',
   imageUrl,
+  localImageSource,
   badge,
   rating = 5,
   gradientColors = colors.category.default,
   onPress,
   onFavorite,
+  onAddToBag,
   isFavorite = false,
 }: ProductHeroCardProps) {
   return (
@@ -57,7 +61,7 @@ export default function ProductHeroCard({
         )}
 
         <Image
-          source={{ uri: imageUrl }}
+          source={localImageSource || { uri: imageUrl }}
           style={styles.productImage}
           contentFit="contain"
           transition={300}
@@ -79,7 +83,7 @@ export default function ProductHeroCard({
             ))}
           </View>
 
-          <Text style={styles.price}>{price} {currency}</Text>
+          <Text style={styles.price}>{Number(price).toFixed(2)} {currency}</Text>
         </View>
 
         {/* Side action buttons */}
@@ -98,13 +102,17 @@ export default function ProductHeroCard({
             />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionBtn}>
-            <Ionicons name="share-outline" size={20} color={colors.text.primary} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionBtn}>
-            <Ionicons name="bag-add-outline" size={20} color={colors.text.primary} />
-          </TouchableOpacity>
+          {onAddToBag && (
+            <TouchableOpacity
+              style={[styles.actionBtn, styles.actionBtnGold]}
+              onPress={() => {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                onAddToBag(id);
+              }}
+            >
+              <Ionicons name="bag-add-outline" size={20} color={colors.text.inverse} />
+            </TouchableOpacity>
+          )}
         </View>
       </LinearGradient>
     </TouchableOpacity>
@@ -182,5 +190,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: colors.glass.border,
+  },
+  actionBtnGold: {
+    backgroundColor: colors.gold[500],
+    borderColor: colors.gold[400],
   },
 });

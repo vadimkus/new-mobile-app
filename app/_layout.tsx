@@ -93,6 +93,10 @@ export default function RootLayout() {
                 name="checkout"
                 options={{ animation: 'slide_from_right' }}
               />
+              <Stack.Screen
+                name="skin-analysis"
+                options={{ animation: 'slide_from_right' }}
+              />
             </Stack>
 
             {showSplash && (

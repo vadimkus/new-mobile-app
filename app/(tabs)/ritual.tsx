@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -9,9 +9,49 @@ import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, typography, spacing, radius, layout } from '../../constants/theme';
-import { DEMO_RITUAL_STEPS, type RitualStep as RitualStepType } from '../../constants/mockData';
 import { useAuth } from '../../contexts/AuthContext';
-import { fetchProducts } from '../../services/api';
+import { fetchProducts, type Product } from '../../services/api';
+
+interface RitualStepType {
+  id: string;
+  stepNumber: number;
+  type: string;
+  product: { id: string; name: string; imageUrl: string };
+  instruction: string;
+  duration: number;
+  waitTime?: number;
+  completed: boolean;
+}
+
+const STEP_TEMPLATES = [
+  { type: 'Cleanse', category: 'cleanser', instruction: 'Massage gently for 60 seconds', duration: 60 },
+  { type: 'Tone', category: 'toner', instruction: 'Pat gently into skin', duration: 30, waitTime: 30 },
+  { type: 'Treat', category: 'serum', instruction: 'Apply 2-3 drops, press into skin', duration: 120, waitTime: 120 },
+  { type: 'Moisturize', category: 'cream', instruction: 'Apply 2-3 dots, massage upward', duration: 45 },
+  { type: 'Protect', category: 'sun', instruction: 'Apply evenly as final step', duration: 30 },
+];
+
+function buildStepsFromProducts(products: Product[]): RitualStepType[] {
+  return STEP_TEMPLATES.map((tmpl, i) => {
+    const match = products.find((p) =>
+      (p.category || '').toLowerCase().includes(tmpl.category),
+    );
+    return {
+      id: `r${i + 1}`,
+      stepNumber: i + 1,
+      type: tmpl.type,
+      product: {
+        id: match ? String(match.id) : '',
+        name: match?.name || `${tmpl.type} product`,
+        imageUrl: match?.imageUrl || match?.images?.[0] || '',
+      },
+      instruction: tmpl.instruction,
+      duration: tmpl.duration,
+      waitTime: tmpl.waitTime,
+      completed: false,
+    };
+  });
+}
 import GlassCard from '../../components/ui/GlassCard';
 import GoldButton from '../../components/ui/GoldButton';
 import RitualStep from '../../components/ritual/RitualStep';
@@ -23,16 +63,13 @@ type TimeOfDay = 'morning' | 'evening';
 export default function RitualScreen() {
   const { user, token } = useAuth();
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>('morning');
-  const [steps, setSteps] = useState<RitualStepType[]>(DEMO_RITUAL_STEPS);
+  const [steps, setSteps] = useState<RitualStepType[]>([]);
   const [streak, setStreak] = useState(0);
   const [lastDate, setLastDate] = useState('');
+  const [loadingSteps, setLoadingSteps] = useState(true);
 
   useEffect(() => {
     (async () => {
-      try {
-        const saved = await AsyncStorage.getItem(STEPS_KEY);
-        if (saved) setSteps(JSON.parse(saved));
-      } catch {}
       try {
         const raw = await AsyncStorage.getItem(STREAK_KEY);
         if (raw) {
@@ -41,34 +78,29 @@ export default function RitualScreen() {
           setLastDate(data.lastDate || '');
         }
       } catch {}
-    })();
-  }, []);
 
-  useEffect(() => {
-    (async () => {
+      try {
+        const saved = await AsyncStorage.getItem(STEPS_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setSteps(parsed);
+            setLoadingSteps(false);
+            return;
+          }
+        }
+      } catch {}
+
       try {
         const userCtx = user ? { id: user.id, token: token ?? undefined } : undefined;
         const products = await fetchProducts(userCtx);
         if (products.length > 0) {
-          setSteps((prev) => prev.map((step) => {
-            const match = products.find((p) =>
-              String(p.id) === step.product.id ||
-              p.name?.toLowerCase().includes(step.product.name.toLowerCase().split(' ')[0]),
-            );
-            if (match) {
-              return {
-                ...step,
-                product: {
-                  ...step.product,
-                  name: match.name || step.product.name,
-                  imageUrl: match.imageUrl || match.images?.[0] || step.product.imageUrl,
-                },
-              };
-            }
-            return step;
-          }));
+          const built = buildStepsFromProducts(products);
+          setSteps(built);
+          AsyncStorage.setItem(STEPS_KEY, JSON.stringify(built)).catch(() => {});
         }
       } catch {}
+      setLoadingSteps(false);
     })();
   }, [user, token]);
 
@@ -117,6 +149,15 @@ export default function RitualScreen() {
         <Animated.View entering={FadeInDown.duration(600)}>
           <Text style={styles.pageTitle}>My Beauty Ritual</Text>
         </Animated.View>
+
+        {loadingSteps && steps.length === 0 && (
+          <View style={{ alignItems: 'center', paddingVertical: spacing.section * 2 }}>
+            <ActivityIndicator size="large" color={colors.gold[500]} />
+            <Text style={{ ...typography.bodySmall, color: colors.text.secondary, marginTop: spacing.lg }}>
+              Building your ritual...
+            </Text>
+          </View>
+        )}
 
         {/* Time toggle */}
         <Animated.View entering={FadeInDown.duration(600).delay(100)} style={styles.toggleContainer}>

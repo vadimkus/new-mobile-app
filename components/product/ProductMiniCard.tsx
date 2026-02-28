@@ -11,9 +11,15 @@ interface ProductMiniCardProps {
   price: number;
   currency?: string;
   imageUrl: string;
+  localImageSource?: any;
   onPress: (id: string) => void;
   onFavorite?: (id: string) => void;
+  onAddToBag?: (id: string) => void;
   isFavorite?: boolean;
+}
+
+function formatPrice(price: number): string {
+  return Number(price).toFixed(2);
 }
 
 export default function ProductMiniCard({
@@ -22,8 +28,10 @@ export default function ProductMiniCard({
   price,
   currency = 'AED',
   imageUrl,
+  localImageSource,
   onPress,
   onFavorite,
+  onAddToBag,
   isFavorite = false,
 }: ProductMiniCardProps) {
   const cardWidth = layout.cardWidth;
@@ -37,12 +45,12 @@ export default function ProductMiniCard({
       activeOpacity={0.8}
       style={[styles.container, { width: cardWidth }]}
     >
-      {/* Gradient border effect */}
       <View style={styles.borderGlow}>
         <View style={styles.inner}>
           <TouchableOpacity
             style={styles.favoriteBtn}
-            onPress={() => {
+            onPress={(e) => {
+              e.stopPropagation();
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               onFavorite?.(id);
             }}
@@ -55,14 +63,29 @@ export default function ProductMiniCard({
           </TouchableOpacity>
 
           <Image
-            source={{ uri: imageUrl }}
+            source={localImageSource || { uri: imageUrl }}
             style={styles.image}
             contentFit="contain"
             transition={200}
           />
 
           <Text style={styles.name} numberOfLines={2}>{name}</Text>
-          <Text style={styles.price}>{price} {currency}</Text>
+          <Text style={styles.price}>{formatPrice(price)} {currency}</Text>
+
+          {onAddToBag && (
+            <TouchableOpacity
+              style={styles.addToBagBtn}
+              onPress={(e) => {
+                e.stopPropagation();
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                onAddToBag(id);
+              }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="bag-add-outline" size={14} color={colors.text.inverse} />
+              <Text style={styles.addToBagText}>Add</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -112,5 +135,23 @@ const styles = StyleSheet.create({
   },
   price: {
     ...typography.priceSmall,
+    marginBottom: spacing.sm,
+  },
+  addToBagBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    backgroundColor: colors.gold[500],
+    paddingVertical: spacing.xs + 2,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.pill,
+    width: '100%',
+  },
+  addToBagText: {
+    ...typography.caption2,
+    color: colors.text.inverse,
+    fontWeight: '700',
+    fontSize: 11,
   },
 });

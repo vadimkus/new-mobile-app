@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -24,13 +25,20 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle, Line } from 'react-native-svg';
 import { colors, typography, spacing, radius, layout } from '../../constants/theme';
-import { DEMO_PRODUCTS } from '../../constants/mockData';
 import { fetchProductById, type Product as ApiProduct } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import GlassCard from '../../components/ui/GlassCard';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const MAP_SIZE = SCREEN_WIDTH - layout.screenPadding * 2;
+
+function parseSafeArray(val: unknown): any[] {
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string' && val.trim().startsWith('[')) {
+    try { const parsed = JSON.parse(val); if (Array.isArray(parsed)) return parsed; } catch {}
+  }
+  return [];
+}
 const CENTER = MAP_SIZE / 2;
 const ORBIT_RADIUS = MAP_SIZE * 0.34;
 
@@ -134,31 +142,96 @@ export default function IngredientExplorerScreen() {
   const { user, token } = useAuth();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [apiProduct, setApiProduct] = useState<ApiProduct | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
         const userCtx = user ? { id: user.id, token: token ?? undefined } : undefined;
         const p = await fetchProductById(id!, userCtx);
-        if (p) setApiProduct(p);
+        if (!cancelled && p) setApiProduct(p);
       } catch {}
+      if (!cancelled) setLoading(false);
     })();
+    return () => { cancelled = true; };
   }, [id, user, token]);
 
-  const demoProduct = useMemo(
-    () => DEMO_PRODUCTS.find((p) => p.id === id) ?? DEMO_PRODUCTS[1],
-    [id],
-  );
+  const INGREDIENT_COLORS = [
+    '#C9A96E', '#7B68EE', '#20B2AA', '#FF6B6B', '#4ECDC4',
+    '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8',
+  ];
 
-  const product = {
-    ...demoProduct,
-    name: apiProduct?.name || demoProduct.name,
-    imageUrl: apiProduct?.imageUrl || apiProduct?.images?.[0] || demoProduct.imageUrl,
-  };
+  const rawIngredients = apiProduct
+    ? parseSafeArray((apiProduct as any).ingredients)
+    : [];
 
-  const ingredients = product.ingredients;
+  const product = apiProduct ? {
+    name: apiProduct.name || '',
+    imageUrl: apiProduct.imageUrl || apiProduct.images?.[0] || '',
+    ingredients: rawIngredients.map((raw: any, i: number) => {
+      if (typeof raw === 'string') {
+        return { name: raw, description: '', color: INGREDIENT_COLORS[i % INGREDIENT_COLORS.length], concentration: 5, origin: 'Korea', efficacy: 3 };
+      }
+      return {
+        name: raw.name || `Ingredient ${i + 1}`,
+        description: raw.description || '',
+        color: raw.color || INGREDIENT_COLORS[i % INGREDIENT_COLORS.length],
+        concentration: raw.concentration ?? 5,
+        origin: raw.origin || 'Korea',
+        efficacy: raw.efficacy ?? 3,
+      };
+    }),
+  } : null;
+
+  const ingredients = product?.ingredients || [];
   const selected = ingredients[selectedIndex];
-  const nodePositions = ingredients.map((_, i) => getNodePosition(i, ingredients.length));
+  const nodePositions = ingredients.map((_: any, i: number) => getNodePosition(i, ingredients.length));
+
+  if (loading) {
+    return (
+      <View style={styles.screen}>
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
+          <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}>
+              <Ionicons name="arrow-back" size={22} color={colors.text.primary} />
+            </TouchableOpacity>
+            <View style={styles.headerCenter}>
+              <Text style={styles.headerTitle}>Ingredient DNA</Text>
+            </View>
+            <View style={styles.navBtn} />
+          </Animated.View>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator size="large" color={colors.gold[500]} />
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
+
+  if (!product || ingredients.length === 0) {
+    return (
+      <View style={styles.screen}>
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
+          <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}>
+              <Ionicons name="arrow-back" size={22} color={colors.text.primary} />
+            </TouchableOpacity>
+            <View style={styles.headerCenter}>
+              <Text style={styles.headerTitle}>Ingredient DNA</Text>
+            </View>
+            <View style={styles.navBtn} />
+          </Animated.View>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="flask-outline" size={48} color={colors.text.muted} />
+            <Text style={{ ...typography.headline, color: colors.text.secondary, marginTop: spacing.lg }}>
+              Ingredient data not available
+            </Text>
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.screen}>

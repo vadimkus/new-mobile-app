@@ -32,6 +32,11 @@
     "plugins": [
       "expo-router",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "genosys-luxe"
+      }
+    }
   }
 }

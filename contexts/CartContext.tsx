@@ -17,6 +17,12 @@ export interface CartItem {
   size?: string;
 }
 
+export interface LastAddedInfo {
+  name: string;
+  imageUrl?: string;
+  addedAt: number;
+}
+
 interface CartState {
   items: CartItem[];
   addItem: (product: Omit<CartItem, 'quantity'>, quantity?: number) => void;
@@ -25,6 +31,7 @@ interface CartState {
   clearCart: () => void;
   itemCount: number;
   subtotal: number;
+  lastAdded: LastAddedInfo | null;
 }
 
 const CartContext = createContext<CartState>({
@@ -35,6 +42,7 @@ const CartContext = createContext<CartState>({
   clearCart: () => {},
   itemCount: 0,
   subtotal: 0,
+  lastAdded: null,
 });
 
 export const useCart = () => useContext(CartContext);
@@ -43,8 +51,8 @@ const cartKey = (item: { id: string; variant?: string }) => `${item.id}_${item.v
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [lastAdded, setLastAdded] = useState<LastAddedInfo | null>(null);
 
-  // Restore cart on mount
   useEffect(() => {
     (async () => {
       try {
@@ -56,7 +64,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })();
   }, []);
 
-  // Persist cart on changes
   useEffect(() => {
     AsyncStorage.setItem(CART_KEY, JSON.stringify(items)).catch(() => {});
   }, [items]);
@@ -70,6 +77,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { ...product, quantity }];
     });
+    setLastAdded({ name: product.name, imageUrl: product.imageUrl, addedAt: Date.now() });
   }, []);
 
   const removeItem = useCallback((id: string, variant?: string) => {
@@ -94,7 +102,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const subtotal = items.reduce((sum, i) => sum + (i.salePrice ?? i.price) * i.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, itemCount, subtotal }}>
+    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, itemCount, subtotal, lastAdded }}>
       {children}
     </CartContext.Provider>
   );

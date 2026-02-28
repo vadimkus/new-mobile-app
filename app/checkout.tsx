@@ -138,7 +138,7 @@ export default function CheckoutScreen() {
             {items.map((item) => (
               <View key={`${item.id}_${item.variant || ''}`} style={styles.itemRow}>
                 <Text style={styles.itemName} numberOfLines={1}>{item.name} × {item.quantity}</Text>
-                <Text style={styles.itemPrice}>{(item.salePrice ?? item.price) * item.quantity} AED</Text>
+                <Text style={styles.itemPrice}>{((item.salePrice ?? item.price) * item.quantity).toFixed(2)} AED</Text>
               </View>
             ))}
           </GlassCard>
@@ -230,18 +230,18 @@ export default function CheckoutScreen() {
           <GlassCard intensity="medium">
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>{subtotal} AED</Text>
+              <Text style={styles.summaryValue}>{Number(subtotal).toFixed(2)} AED</Text>
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Shipping ({emirate})</Text>
               <Text style={[styles.summaryValue, shippingCost === 0 && { color: colors.status.success }]}>
-                {shippingCost === 0 ? 'FREE' : `${shippingCost} AED`}
+                {shippingCost === 0 ? 'FREE' : `${Number(shippingCost).toFixed(2)} AED`}
               </Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.summaryRow}>
               <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>{total} AED</Text>
+              <Text style={styles.totalValue}>{Number(total).toFixed(2)} AED</Text>
             </View>
             <Text style={styles.vatNote}>VAT included ({Math.round(vatRate * 100)}%)</Text>
           </GlassCard>

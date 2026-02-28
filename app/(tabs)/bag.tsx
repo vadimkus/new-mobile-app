@@ -56,7 +56,7 @@ export default function BagScreen() {
               <View style={styles.cartInfo}>
                 <Text style={styles.cartName} numberOfLines={2}>{item.name}</Text>
                 {item.variant && <Text style={styles.cartVariant}>{item.variant}</Text>}
-                <Text style={styles.cartPrice}>{item.salePrice ?? item.price} {item.currency}</Text>
+                <Text style={styles.cartPrice}>{Number(item.salePrice ?? item.price).toFixed(2)} {item.currency}</Text>
               </View>
 
               <View style={styles.rightCol}>
@@ -101,7 +101,7 @@ export default function BagScreen() {
               <GlassCard>
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Subtotal</Text>
-                  <Text style={styles.summaryValue}>{subtotal} AED</Text>
+                  <Text style={styles.summaryValue}>{Number(subtotal).toFixed(2)} AED</Text>
                 </View>
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Delivery</Text>
@@ -112,7 +112,7 @@ export default function BagScreen() {
                 <View style={styles.divider} />
                 <View style={styles.summaryRow}>
                   <Text style={styles.totalLabel}>Total</Text>
-                  <Text style={styles.totalValue}>{subtotal} AED</Text>
+                  <Text style={styles.totalValue}>{Number(subtotal).toFixed(2)} AED</Text>
                 </View>
                 <Text style={styles.vatNote}>VAT included</Text>
               </GlassCard>

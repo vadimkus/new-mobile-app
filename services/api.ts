@@ -90,19 +90,77 @@ export const fetchProductById = async (
 
 // ─── Categories ──────────────────────────────────────────────────────────────
 
-export const fetchCategories = async (): Promise<string[]> => {
+export interface CategoryItem {
+  id: string;
+  label: string;
+  icon: string;
+  badge?: string | null;
+}
+
+const CATEGORY_ICON_MAP: Record<string, string> = {
+  'all':           'apps-outline',
+  'serum':         'water-outline',
+  'mask':          'happy-outline',
+  'cream':         'ellipse-outline',
+  'peeling':       'sparkles-outline',
+  'sun':           'sunny-outline',
+  'cleanser':      'water-outline',
+  'toner/mist':    'flask-outline',
+  'eye care':      'eye-outline',
+  'device':        'hardware-chip-outline',
+  'microneedling': 'medical-outline',
+  'pro solution':  'medkit-outline',
+  'scalp/hair':    'leaf-outline',
+  'cushion bb':    'color-palette-outline',
+  'beauty boxes':  'gift-outline',
+  'bio meso':      'pulse-outline',
+  'kits':          'grid-outline',
+};
+
+const iconForCategory = (name: string): string =>
+  CATEGORY_ICON_MAP[name.toLowerCase()] || 'pricetag-outline';
+
+function extractPrimaryCategories(
+  rawNames: string[],
+  badgeMap: Map<string, string | null>,
+): CategoryItem[] {
+  const seen = new Map<string, CategoryItem>();
+  for (const raw of rawNames) {
+    const parts = raw.includes(',') ? raw.split(',').map((s) => s.trim()) : [raw];
+    for (const part of parts) {
+      if (!part) continue;
+      const key = part.toLowerCase();
+      if (!seen.has(key)) {
+        seen.set(key, {
+          id: key,
+          label: part,
+          icon: iconForCategory(part),
+          badge: badgeMap.get(part) ?? badgeMap.get(raw) ?? null,
+        });
+      }
+    }
+  }
+  const sorted = [...seen.values()].sort((a, b) => a.label.localeCompare(b.label));
+  return [{ id: 'all', label: 'All', icon: 'apps-outline' }, ...sorted];
+}
+
+export const fetchCategories = async (): Promise<CategoryItem[]> => {
   try {
     const res = await fetch(`${API}/categories`, { method: 'GET', headers: baseHeaders() });
-    if (!res.ok) {
-      const products = await fetchProducts();
-      return [...new Set(products.map((p) => p.category).filter(Boolean))];
+    if (res.ok) {
+      const data = await res.json();
+      const names: string[] = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+      const badges: Array<{ name: string; badge: string | null }> = data?.categoriesWithBadges || [];
+      const badgeMap = new Map(badges.map((b) => [b.name, b.badge]));
+      return extractPrimaryCategories(names, badgeMap);
     }
-    const data = await res.json();
-    return Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
   } catch (e: any) {
-    log.error('Categories failed', e?.message);
-    throw e;
+    log.debug('Categories endpoint unavailable, deriving from products', e?.message);
   }
+
+  const products = await fetchProducts();
+  const rawNames = [...new Set(products.map((p) => p.category).filter(Boolean))];
+  return extractPrimaryCategories(rawNames, new Map());
 };
 
 // ─── Shipping ────────────────────────────────────────────────────────────────
@@ -236,6 +294,32 @@ export const fetchTraining = async (options?: { locale?: string }) => {
     return await res.json();
   } catch (e: any) {
     log.error('Training fetch failed', e?.message);
+    throw e;
+  }
+};
+
+// ─── Skin Recommendations ─────────────────────────────────────────────────────
+
+export const fetchSkinRecommendations = async (params: {
+  skinType: string;
+  ageGroup: string;
+  targetConcerns: string;
+}) => {
+  try {
+    const baseUrl = (API || '').replace('/api/mobile', '');
+    const qs = new URLSearchParams({
+      skinType: params.skinType,
+      ageGroup: params.ageGroup,
+      targetConcerns: params.targetConcerns,
+    });
+    const res = await fetch(`${baseUrl}/api/skin-recommendations?${qs.toString()}`, {
+      method: 'GET',
+      headers: { Accept: 'application/json', 'x-api-key': API_KEY },
+    });
+    if (!res.ok) throw new Error(`Skin recs failed: ${res.status}`);
+    return await res.json();
+  } catch (e: any) {
+    log.error('Skin recommendation fetch failed', e?.message);
     throw e;
   }
 };
@@ -499,6 +583,7 @@ export default {
   fetchPromo,
   searchProducts,
   fetchTraining,
+  fetchSkinRecommendations,
   loginWithEmail,
   registerUser,
   loginWithGoogle,
