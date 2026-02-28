@@ -15,7 +15,11 @@ import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { colors, typography, spacing, radius, layout } from '../../constants/theme';
 import { DEMO_PRODUCTS, CATEGORIES } from '../../constants/mockData';
 import { useAuth } from '../../contexts/AuthContext';
+import { useCart } from '../../contexts/CartContext';
+import { useLocalization } from '../../contexts/LocalizationContext';
 import { fetchProducts, type Product } from '../../services/api';
+import { getCachedProducts, setCachedProducts } from '../../services/productCache';
+import { getRecentlyViewed } from '../../services/recentlyViewed';
 import ProductHeroCard from '../../components/product/ProductHeroCard';
 import ProductMiniCard from '../../components/product/ProductMiniCard';
 import CategoryIcon from '../../components/ui/CategoryIcon';
@@ -23,30 +27,51 @@ import SectionHeader from '../../components/ui/SectionHeader';
 
 export default function DiscoverScreen() {
   const { user, token } = useAuth();
+  const { itemCount } = useCart();
+  const { t } = useLocalization();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<any[]>(DEMO_PRODUCTS);
   const [apiLoaded, setApiLoaded] = useState(false);
   const [loadingApi, setLoadingApi] = useState(true);
+  const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>([]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Try cache first for instant display
+      const cached = await getCachedProducts();
+      if (!cancelled && cached && cached.length > 0) {
+        setProducts(cached);
+        setApiLoaded(true);
+      }
+
       try {
         const userCtx = user ? { id: user.id, token: token ?? undefined } : undefined;
         const data = await fetchProducts(userCtx);
         if (!cancelled && data.length > 0) {
           setProducts(data);
           setApiLoaded(true);
+          setCachedProducts(data);
         }
       } catch {
-        // Keep demo data on failure
+        // If API fails and we have no cache, keep demo data
       } finally {
         if (!cancelled) setLoadingApi(false);
       }
     })();
     return () => { cancelled = true; };
   }, [user, token]);
+
+  // Load recently viewed on mount/focus
+  useEffect(() => {
+    getRecentlyViewed().then(setRecentlyViewedIds);
+  }, []);
+
+  const recentlyViewedProducts = recentlyViewedIds
+    .map((rid) => products.find((p) => String(p.id) === rid))
+    .filter(Boolean)
+    .slice(0, 6);
 
   const filteredProducts = products.filter((p) => {
     if (activeCategory !== 'all') {
@@ -76,13 +101,18 @@ export default function DiscoverScreen() {
       >
         {/* Header */}
         <Animated.View entering={FadeInDown.duration(600)} style={styles.header}>
-          <TouchableOpacity style={styles.headerBtn} onPress={() => router.push('/profile')}>
-            <Ionicons name="menu-outline" size={24} color={colors.text.primary} />
+          <TouchableOpacity style={styles.headerBtn} onPress={() => router.push('/(tabs)/bag')}>
+            <Ionicons name="bag-outline" size={22} color={colors.text.primary} />
+            {itemCount > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{itemCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
 
           <View style={styles.headerCenter}>
             <Text style={styles.brandName}>GENOSYS</Text>
-            <Text style={styles.brandTagline}>Premium Skincare & Beauty</Text>
+            <Text style={styles.brandTagline}>{t('common.premiumSkincare')}</Text>
           </View>
 
           <TouchableOpacity style={styles.avatarBtn} onPress={() => router.push('/profile')}>
@@ -174,6 +204,25 @@ export default function DiscoverScreen() {
           </Animated.View>
         )}
 
+        {/* Recently Viewed */}
+        {recentlyViewedProducts.length > 0 && (
+          <Animated.View entering={FadeInDown.duration(700).delay(600)}>
+            <SectionHeader title={t('common.recentlyViewed')} />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.md, paddingBottom: spacing.md }}>
+              {recentlyViewedProducts.map((product: any) => (
+                <ProductMiniCard
+                  key={String(product.id)}
+                  id={String(product.id)}
+                  name={product.name}
+                  price={product.salePrice ?? product.price}
+                  imageUrl={product.imageUrl || product.images?.[0]}
+                  onPress={handleProductPress}
+                />
+              ))}
+            </ScrollView>
+          </Animated.View>
+        )}
+
         <View style={{ height: layout.tabBarHeight + 20 }} />
       </ScrollView>
     </SafeAreaView>
@@ -186,7 +235,9 @@ const styles = StyleSheet.create({
   scrollContent: { paddingHorizontal: layout.screenPadding },
 
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.md },
-  headerBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  headerBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', position: 'relative' as const },
+  cartBadge: { position: 'absolute' as const, top: 2, right: 0, backgroundColor: colors.gold[500], width: 18, height: 18, borderRadius: 9, alignItems: 'center' as const, justifyContent: 'center' as const },
+  cartBadgeText: { ...typography.caption2, color: colors.text.inverse, fontSize: 10, fontWeight: '700' as const },
   headerCenter: { alignItems: 'center' },
   brandName: { ...typography.title2, letterSpacing: 4, fontSize: 24 },
   brandTagline: { ...typography.caption1, color: colors.gold[500], marginTop: 2, letterSpacing: 0.5 },

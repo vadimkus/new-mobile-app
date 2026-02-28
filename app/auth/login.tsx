@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ import * as Haptics from 'expo-haptics';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
+import { isBiometricEnabled, authenticateWithBiometrics, getBiometricTypeName } from '../../services/biometricService';
 import { colors, typography, spacing, radius, shadows } from '../../constants/theme';
 import AUTH_CONFIG from '../../config/auth';
 import GoldButton from '../../components/ui/GoldButton';
@@ -52,6 +53,47 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [privacyConsent, setPrivacyConsent] = useState(false);
+  const [biometricReady, setBiometricReady] = useState(false);
+  const [biometricName, setBiometricName] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      const enabled = await isBiometricEnabled();
+      if (enabled) {
+        setBiometricReady(true);
+        const name = await getBiometricTypeName();
+        setBiometricName(name);
+      }
+    })();
+  }, []);
+
+  const handleBiometricLogin = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setLoading(true);
+    try {
+      const result = await authenticateWithBiometrics();
+      if (result.success && result.credentials) {
+        if (result.credentials.token) {
+          router.replace('/(tabs)/discover');
+        } else if (result.credentials.email && result.credentials.password) {
+          const loginResult = await authLogin(result.credentials.email, result.credentials.password);
+          if (loginResult.success) {
+            router.replace('/(tabs)/discover');
+          } else {
+            Alert.alert('Error', loginResult.error || 'Login failed');
+          }
+        }
+      } else {
+        if (result.error && result.error !== 'Cancelled') {
+          Alert.alert('Error', result.error);
+        }
+      }
+    } catch {
+      Alert.alert('Error', 'Biometric login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEmailAuth = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -434,10 +476,25 @@ export default function LoginScreen() {
             />
           </Animated.View>
 
+          {/* Biometric Login */}
+          {isLogin && biometricReady && (
+            <Animated.View entering={FadeIn.duration(400).delay(580)}>
+              <TouchableOpacity
+                style={styles.biometricBtn}
+                onPress={handleBiometricLogin}
+                activeOpacity={0.7}
+                disabled={loading}
+              >
+                <Ionicons name="finger-print-outline" size={22} color={colors.gold[500]} />
+                <Text style={styles.biometricText}>Login with {biometricName}</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
+
           {/* Forgot password */}
           {isLogin && (
             <Animated.View entering={FadeIn.duration(400).delay(600)}>
-              <TouchableOpacity style={styles.forgotBtn} activeOpacity={0.7}>
+              <TouchableOpacity style={styles.forgotBtn} activeOpacity={0.7} onPress={() => router.push('/auth/forgot-password')}>
                 <Text style={styles.forgotText}>Forgot Password?</Text>
               </TouchableOpacity>
             </Animated.View>
@@ -705,6 +762,21 @@ const styles = StyleSheet.create({
   },
 
   // Forgot
+  biometricBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+    paddingVertical: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.gold[500] + '40',
+    borderRadius: radius.lg,
+  },
+  biometricText: {
+    ...typography.label,
+    color: colors.gold[500],
+  },
   forgotBtn: {
     alignItems: 'center',
     marginTop: spacing.lg,

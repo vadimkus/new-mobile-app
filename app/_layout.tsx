@@ -7,10 +7,15 @@ import { colors } from '../constants/theme';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { CartProvider } from '../contexts/CartContext';
 import { FavoritesProvider } from '../contexts/FavoritesContext';
+import { LocalizationProvider } from '../contexts/LocalizationContext';
 import { registerForPushNotificationsAsync, addNotificationResponseListener } from '../services/pushNotifications';
 import { registerPushToken } from '../services/api';
+import { setupDeepLinkListener } from '../utils/deepLinking';
 import { router } from 'expo-router';
 import VideoSplash from '../components/ui/VideoSplash';
+import ErrorBoundary from '../components/ErrorBoundary';
+import ForceUpdateScreen from '../components/ForceUpdateScreen';
+import { checkAppVersion } from '../services/api';
 
 function PushRegistration() {
   const { token } = useAuth();
@@ -33,7 +38,12 @@ function PushRegistration() {
         router.push(data.screen);
       }
     });
-    return () => sub.remove();
+
+    const removeDeepLink = setupDeepLinkListener();
+    return () => {
+      sub.remove();
+      removeDeepLink();
+    };
   }, [token]);
 
   return null;
@@ -41,9 +51,18 @@ function PushRegistration() {
 
 export default function RootLayout() {
   const [showSplash, setShowSplash] = useState(true);
+  const [forceUpdate, setForceUpdate] = useState(false);
+
+  useEffect(() => {
+    checkAppVersion().then((result) => {
+      if (result.updateRequired) setForceUpdate(true);
+    });
+  }, []);
 
   return (
     <GestureHandlerRootView style={styles.root}>
+      <ErrorBoundary>
+      <LocalizationProvider>
       <AuthProvider>
         <CartProvider>
           <FavoritesProvider>
@@ -58,6 +77,8 @@ export default function RootLayout() {
             >
               <Stack.Screen name="index" />
               <Stack.Screen name="auth/login" options={{ animation: 'fade' }} />
+              <Stack.Screen name="auth/forgot-password" options={{ animation: 'slide_from_right' }} />
+              <Stack.Screen name="auth/reset-password" options={{ animation: 'slide_from_right' }} />
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="profile" />
               <Stack.Screen
@@ -80,9 +101,12 @@ export default function RootLayout() {
                 onDone={() => setShowSplash(false)}
               />
             )}
+            {forceUpdate && <ForceUpdateScreen />}
           </FavoritesProvider>
         </CartProvider>
       </AuthProvider>
+      </LocalizationProvider>
+      </ErrorBoundary>
     </GestureHandlerRootView>
   );
 }

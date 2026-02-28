@@ -280,6 +280,54 @@ export const loginWithGoogle = async (idToken: string) => {
   return { success: true, user: body.user, token: body.token };
 };
 
+// ─── App Version Check ───────────────────────────────────────────────────────
+
+export const checkAppVersion = async (): Promise<{ updateRequired: boolean; minimumVersion?: string }> => {
+  try {
+    const res = await fetch(`${API}/mobile/app-version`, { headers: baseHeaders() });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) return { updateRequired: false };
+    return {
+      updateRequired: body.updateRequired === true,
+      minimumVersion: body.minimumVersion,
+    };
+  } catch {
+    return { updateRequired: false };
+  }
+};
+
+// ─── Password Reset ──────────────────────────────────────────────────────────
+
+export const requestPasswordReset = async (email: string) => {
+  try {
+    const res = await fetch(`${API}/auth/forgot-password`, {
+      method: 'POST',
+      headers: baseHeaders(),
+      body: JSON.stringify({ email }),
+    });
+    const body = await res.json().catch(() => null);
+    if (!res.ok) return { success: false, error: body?.error || body?.message || 'Could not request password reset' };
+    return { success: true, message: body?.message || 'Reset email sent' };
+  } catch {
+    return { success: false, error: 'Network error. Please try again.' };
+  }
+};
+
+export const resetPasswordWithToken = async (resetToken: string, newPassword: string) => {
+  try {
+    const res = await fetch(`${API}/auth/reset-password`, {
+      method: 'POST',
+      headers: baseHeaders(),
+      body: JSON.stringify({ token: resetToken, newPassword }),
+    });
+    const body = await res.json().catch(() => null);
+    if (!res.ok) return { success: false, error: body?.error || body?.message || 'Could not reset password' };
+    return { success: true, message: body?.message || 'Password reset' };
+  } catch {
+    return { success: false, error: 'Network error. Please try again.' };
+  }
+};
+
 // ─── Profile Update ─────────────────────────────────────────────────────────
 
 export const updateUserProfile = async (
@@ -349,6 +397,93 @@ export const loginWithApple = async (payload: { identityToken: string; fullName?
   const body = await res.json().catch(() => ({}));
   if (!res.ok) return { success: false, error: body?.error || 'Apple login failed' };
   return { success: true, user: body.user, token: body.token };
+};
+
+// ─── Reviews ─────────────────────────────────────────────────────────────────
+
+const WEB = AUTH_CONFIG.WEB_ORIGIN || 'https://genosys.ae';
+
+export interface Review {
+  id: string | number;
+  userId?: string;
+  userName?: string;
+  rating: number;
+  title?: string;
+  comment: string;
+  createdAt?: string;
+}
+
+export const fetchProductReviews = async (productId: string): Promise<{ reviews: Review[]; average: number; count: number }> => {
+  try {
+    const res = await fetch(`${WEB}/api/products/${productId}/reviews`);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) return { reviews: [], average: 0, count: 0 };
+    const reviews: Review[] = body.reviews || [];
+    const average = body.averageRating ?? (reviews.length > 0 ? reviews.reduce((sum: number, r: Review) => sum + r.rating, 0) / reviews.length : 0);
+    return { reviews, average, count: body.reviewCount ?? reviews.length };
+  } catch {
+    return { reviews: [], average: 0, count: 0 };
+  }
+};
+
+export const submitReview = async (
+  token: string,
+  productId: string,
+  data: { rating: number; title?: string; comment: string },
+) => {
+  try {
+    const res = await authenticatedFetch(`${WEB}/api/products/${productId}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }, token);
+    const body = await res.json().catch(() => ({}));
+    return { success: res.ok, review: body.review, error: body?.error };
+  } catch {
+    return { success: false, error: 'Network error' };
+  }
+};
+
+export const deleteReview = async (token: string, productId: string, reviewId: string) => {
+  try {
+    const res = await authenticatedFetch(`${WEB}/api/products/${productId}/reviews/${reviewId}`, {
+      method: 'DELETE',
+    }, token);
+    return { success: res.ok };
+  } catch {
+    return { success: false };
+  }
+};
+
+// ─── Wishlist (Server Sync) ──────────────────────────────────────────────────
+
+export const fetchWishlist = async (token: string): Promise<string[]> => {
+  try {
+    const res = await authenticatedFetch(`${API}/user/wishlist`, { method: 'GET' }, token);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) return [];
+    const items = body.wishlist || body.items || body;
+    if (Array.isArray(items)) return items.map((i: any) => String(i.productId || i.id || i));
+    return [];
+  } catch {
+    return [];
+  }
+};
+
+export const addToWishlist = async (token: string, productId: string) => {
+  try {
+    await authenticatedFetch(`${API}/user/wishlist`, {
+      method: 'POST',
+      body: JSON.stringify({ productId }),
+    }, token);
+  } catch {}
+};
+
+export const removeFromWishlist = async (token: string, productId: string) => {
+  try {
+    await authenticatedFetch(`${API}/user/wishlist/${productId}`, {
+      method: 'DELETE',
+    }, token);
+  } catch {}
 };
 
 export default {

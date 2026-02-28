@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,7 @@ import * as Haptics from 'expo-haptics';
 import { colors, typography, spacing, radius, layout, shadows } from '../../constants/theme';
 import { DEMO_PRODUCTS } from '../../constants/mockData';
 import { fetchProductById, type Product as ApiProduct } from '../../services/api';
+import { addToRecentlyViewed } from '../../services/recentlyViewed';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
@@ -32,6 +33,7 @@ import ProductPodium from '../../components/product/ProductPodium';
 import BenefitPill from '../../components/ui/BenefitPill';
 import GoldButton from '../../components/ui/GoldButton';
 import GlassCard from '../../components/ui/GlassCard';
+import ProductReviews from '../../components/product/ProductReviews';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -54,6 +56,7 @@ export default function ProductPodiumScreen() {
 
   useEffect(() => {
     let cancelled = false;
+    if (id) addToRecentlyViewed(id);
     (async () => {
       try {
         const userCtx = user ? { id: user.id, token: token ?? undefined } : undefined;
@@ -252,6 +255,9 @@ export default function ProductPodiumScreen() {
               </TouchableOpacity>
             </Animated.View>
           )}
+
+          {/* Reviews */}
+          <ProductReviews productId={productId} />
 
           <View style={{ height: 120 }} />
         </ScrollView>

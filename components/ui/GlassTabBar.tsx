@@ -10,22 +10,23 @@ import Animated, {
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, typography, spacing, radius, layout } from '../../constants/theme';
+import { useLocalization } from '../../contexts/LocalizationContext';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 interface TabConfig {
   name: string;
-  label: string;
+  labelKey: string;
   icon: IconName;
   iconActive: IconName;
   badge?: number;
 }
 
 const TABS: TabConfig[] = [
-  { name: 'discover', label: 'Discover', icon: 'compass-outline', iconActive: 'compass' },
-  { name: 'ritual', label: 'Ritual', icon: 'sunny-outline', iconActive: 'sunny' },
-  { name: 'skin-ai', label: 'Skin AI', icon: 'scan-outline', iconActive: 'scan' },
-  { name: 'bag', label: 'Bag', icon: 'bag-outline', iconActive: 'bag' },
+  { name: 'discover', labelKey: 'tabs.discover', icon: 'compass-outline', iconActive: 'compass' },
+  { name: 'ritual', labelKey: 'tabs.ritual', icon: 'sunny-outline', iconActive: 'sunny' },
+  { name: 'skin-ai', labelKey: 'tabs.skinAi', icon: 'scan-outline', iconActive: 'scan' },
+  { name: 'bag', labelKey: 'tabs.bag', icon: 'bag-outline', iconActive: 'bag' },
 ];
 
 interface GlassTabBarProps {
@@ -39,11 +40,13 @@ function TabItem({
   isActive,
   badge,
   onPress,
+  label,
 }: {
   tab: TabConfig;
   isActive: boolean;
   badge?: number;
   onPress: () => void;
+  label: string;
 }) {
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -80,7 +83,7 @@ function TabItem({
         )}
       </Animated.View>
       <Animated.Text style={[styles.tabLabel, { color: labelColor }]}>
-        {tab.label}
+        {label}
       </Animated.Text>
     </TouchableOpacity>
   );
@@ -88,6 +91,7 @@ function TabItem({
 
 export default function GlassTabBar({ state, descriptors, navigation }: GlassTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { t } = useLocalization();
   const bottomPadding = Math.max(insets.bottom, 8);
 
   return (
@@ -113,6 +117,7 @@ export default function GlassTabBar({ state, descriptors, navigation }: GlassTab
                 tab={tab}
                 isActive={isActive}
                 badge={badge}
+                label={t(tab.labelKey)}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   const event = navigation.emit({

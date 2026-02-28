@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,12 +10,40 @@ import GlassCard from '../../components/ui/GlassCard';
 import MenuRow from '../../components/ui/MenuRow';
 import SectionHeader from '../../components/ui/SectionHeader';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLocalization } from '../../contexts/LocalizationContext';
+import { isBiometricEnabled, enableBiometricAuth, disableBiometricAuth, checkBiometricSupport } from '../../services/biometricService';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
+  const { locale, t } = useLocalization();
+  const langLabel = locale === 'ar' ? 'العربية' : locale === 'ru' ? 'Русский' : 'English';
   const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [emailNotifs, setEmailNotifs] = useState(true);
   const [pushNotifs, setPushNotifs] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const support = await checkBiometricSupport();
+      setBiometricAvailable(support.isAvailable && support.isEnrolled);
+      const enabled = await isBiometricEnabled();
+      setBiometricEnabled(enabled);
+    })();
+  }, []);
+
+  const handleBiometricToggle = useCallback(async (value: boolean) => {
+    if (value) {
+      if (!user?.email || !token) {
+        Alert.alert('Login Required', 'Please log in to enable biometric authentication.');
+        return;
+      }
+      const result = await enableBiometricAuth({ email: user.email, token });
+      setBiometricEnabled(result.success);
+    } else {
+      await disableBiometricAuth();
+      setBiometricEnabled(false);
+    }
+  }, [user, token]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -25,7 +53,7 @@ export default function ProfileScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={22} color={colors.text.primary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profile</Text>
+          <Text style={styles.headerTitle}>{t('navigation.profile')}</Text>
           <View style={{ width: 40 }} />
         </Animated.View>
 
@@ -86,36 +114,38 @@ export default function ProfileScreen() {
 
         {/* Account & Settings */}
         <Animated.View entering={FadeInDown.duration(500).delay(300)}>
-          <Text style={styles.sectionTitle}>Account & Settings</Text>
+          <Text style={styles.sectionTitle}>{t('profile.accountSection')}</Text>
           <GlassCard padding="xs" noBorder>
-            <MenuRow icon="person-outline" label="Personal Information" subtitle="Name, email, phone" onPress={() => router.push('/profile/edit')} />
-            <MenuRow icon="location-outline" label="Addresses" subtitle="Shipping addresses" onPress={() => router.push('/profile/addresses')} />
-            <MenuRow icon="card-outline" label="Payment & Billing" subtitle="Payment methods, billing info" onPress={() => router.push('/profile/payment')} />
+            <MenuRow icon="person-outline" label={t('profile.personalInformation')} onPress={() => router.push('/profile/edit')} />
+            <MenuRow icon="location-outline" label={t('profile.addresses')} onPress={() => router.push('/profile/addresses')} />
+            <MenuRow icon="card-outline" label={t('profile.paymentAndBilling')} onPress={() => router.push('/profile/payment')} />
           </GlassCard>
         </Animated.View>
 
         {/* Privacy & Security */}
         <Animated.View entering={FadeInDown.duration(500).delay(400)}>
-          <Text style={styles.sectionTitle}>Privacy & Security</Text>
+          <Text style={styles.sectionTitle}>{t('profile.privacyAndSecurity')}</Text>
           <GlassCard padding="xs" noBorder>
-            <MenuRow icon="finger-print-outline" label="Biometric Login" isSwitch switchValue={biometricEnabled} onSwitchChange={setBiometricEnabled} />
-            <MenuRow icon="mail-outline" label="Email Notifications" isSwitch switchValue={emailNotifs} onSwitchChange={setEmailNotifs} />
-            <MenuRow icon="notifications-outline" label="Push Notifications" isSwitch switchValue={pushNotifs} onSwitchChange={setPushNotifs} />
-            <MenuRow icon="shield-checkmark-outline" label="Privacy Policy" onPress={() => router.push('/profile/privacy')} />
-            <MenuRow icon="document-text-outline" label="Terms & Conditions" onPress={() => router.push('/profile/terms')} />
+            {biometricAvailable && (
+              <MenuRow icon="finger-print-outline" label={t('profile.biometricAuthentication')} isSwitch switchValue={biometricEnabled} onSwitchChange={handleBiometricToggle} />
+            )}
+            <MenuRow icon="mail-outline" label={t('profile.emailNotifications')} isSwitch switchValue={emailNotifs} onSwitchChange={setEmailNotifs} />
+            <MenuRow icon="notifications-outline" label={t('profile.pushNotifications')} isSwitch switchValue={pushNotifs} onSwitchChange={setPushNotifs} />
+            <MenuRow icon="shield-checkmark-outline" label={t('profile.privacyPolicy')} onPress={() => router.push('/profile/privacy')} />
+            <MenuRow icon="document-text-outline" label={t('profile.termsAndConditions')} onPress={() => router.push('/profile/terms')} />
           </GlassCard>
         </Animated.View>
 
         {/* General */}
         <Animated.View entering={FadeInDown.duration(500).delay(500)}>
-          <Text style={styles.sectionTitle}>General</Text>
+          <Text style={styles.sectionTitle}>{t('profile.general')}</Text>
           <GlassCard padding="xs" noBorder>
-            <MenuRow icon="language-outline" label="Language" rightText="English" onPress={() => router.push('/profile/language')} />
-            <MenuRow icon="help-circle-outline" label="Help & Support" onPress={() => router.push('/profile/help')} />
-            <MenuRow icon="chatbubbles-outline" label="Contact Us" onPress={() => router.push('/profile/contact')} />
-            <MenuRow icon="gift-outline" label="Promotions" subtitle="Special offers & deals" onPress={() => router.push('/profile/promo')} />
-            <MenuRow icon="school-outline" label="Training Materials" onPress={() => router.push('/profile/training')} />
-            <MenuRow icon="information-circle-outline" label="About GENOSYS" onPress={() => router.push('/profile/about')} />
+            <MenuRow icon="language-outline" label={t('profile.language')} rightText={langLabel} onPress={() => router.push('/profile/language')} />
+            <MenuRow icon="help-circle-outline" label={t('profile.helpAndSupport')} onPress={() => router.push('/profile/help')} />
+            <MenuRow icon="chatbubbles-outline" label={t('profile.contactUs')} onPress={() => router.push('/profile/contact')} />
+            <MenuRow icon="gift-outline" label={t('promo.infoTitle')} onPress={() => router.push('/profile/promo')} />
+            <MenuRow icon="school-outline" label={t('navigation.training')} onPress={() => router.push('/profile/training')} />
+            <MenuRow icon="information-circle-outline" label={t('profile.aboutGenosys')} onPress={() => router.push('/profile/about')} />
           </GlassCard>
         </Animated.View>
 
@@ -124,7 +154,7 @@ export default function ProfileScreen() {
           <GlassCard padding="xs" noBorder>
             <MenuRow
               icon="log-out-outline"
-              label="Sign Out"
+              label={t('common.logout')}
               destructive
               showChevron={false}
               onPress={() => {
