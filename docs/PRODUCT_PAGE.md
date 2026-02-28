@@ -17,8 +17,9 @@ The `InteractivePodium` component (`components/product/InteractivePodium.tsx`) i
 | **Depth Simulation** | Pills at "back" (top) are smaller/dimmer; pills at "front" (bottom) are full-size |
 | **Gyroscope Parallax** | Product image shifts subtly with device tilt via `useAnimatedSensor` |
 | **Ambient Effects** | Gold glow pulse, sparkle particles, orbit ring hint |
-| **Edge Fade Blending** | LinearGradient overlays on all four edges fade image into black background |
+| **Edge Fade Blending** | LinearGradient overlays on all four edges fade image into background |
 | **SVG Radial Glow** | Smooth radial gradient behind product for ambient lighting effect |
+| **Adaptive Colors** | Background, glow, and fades derive from product image URL via `useImageColors` |
 | **Z-Index Layering** | Pills always render on top of product image (zIndex 10-30 vs image zIndex 1) |
 
 ### Pill Interaction
@@ -57,9 +58,30 @@ Dependencies:
 - expo-haptics (feedback)
 ```
 
+## Adaptive Colors
+
+The `InteractivePodium` component uses the `useImageColors` hook to derive colors from the product's image URL:
+
+```typescript
+<InteractivePodium
+  imageSource={...}
+  imageUri={product.imageUrl}  // Used for color derivation
+  benefits={...}
+/>
+```
+
+Colors adapt automatically:
+- **`dynBG`** — dark tinted background (from `pc.dominant`)
+- **`dynGlow`** — vibrant accent for glow effects (from `pc.glowColor`)
+
+These dynamic values replace the hardcoded black/gold throughout the component:
+- Edge fade gradients use `dynBG`
+- Ambient radial glow uses `dynGlow`
+- Podium reflection uses `dynGlow`
+
 ## Cutout Image Blending
 
-For transparent PNG cutout images on black backgrounds:
+For transparent PNG cutout images on adaptive dark backgrounds:
 
 ### Edge Fade Gradients
 

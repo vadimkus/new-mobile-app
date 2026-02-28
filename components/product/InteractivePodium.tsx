@@ -37,6 +37,7 @@ import Animated, {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { colors, typography, spacing, radius } from '../../constants/theme';
+import { useImageColors } from '../../hooks/useImageColors';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -374,10 +375,14 @@ function ImageLightbox({
 
 interface Props {
   imageSource: ImageSource;
+  imageUri?: string;
   benefits: any[];
 }
 
-export default function InteractivePodium({ imageSource, benefits }: Props) {
+export default function InteractivePodium({ imageSource, imageUri, benefits }: Props) {
+  const pc = useImageColors(imageUri);
+  const dynBG = pc.isExtracted ? pc.dominant : BG;
+  const dynGlow = pc.isExtracted ? pc.glowColor : GOLD;
   const pills = useMemo(
     () => benefits.slice(0, MAX_PILLS).map((b, i) => parseBenefit(b, i)),
     [benefits],
@@ -522,15 +527,15 @@ export default function InteractivePodium({ imageSource, benefits }: Props) {
             <Sparkle key={i} x={sp.x} y={sp.y} size={sp.size} d={sp.delay} />
           ))}
 
-          {/* Ambient radial glow — SVG for smooth radial falloff */}
+          {/* Ambient radial glow — color-adaptive SVG */}
           <Animated.View style={[styles.glow, glowStyle]} pointerEvents="none">
             <Svg width={SW * 0.62} height={SW * 0.62} viewBox={`0 0 100 100`}>
               <Defs>
                 <RadialGradient id="ambientGlow" cx="50%" cy="50%" rx="50%" ry="50%">
-                  <Stop offset="0%" stopColor={colors.gold[500]} stopOpacity={0.18} />
-                  <Stop offset="35%" stopColor={colors.gold[600]} stopOpacity={0.08} />
-                  <Stop offset="70%" stopColor={colors.gold[800]} stopOpacity={0.02} />
-                  <Stop offset="100%" stopColor="#000000" stopOpacity={0} />
+                  <Stop offset="0%" stopColor={dynGlow} stopOpacity={0.18} />
+                  <Stop offset="35%" stopColor={dynGlow} stopOpacity={0.08} />
+                  <Stop offset="70%" stopColor={dynGlow} stopOpacity={0.02} />
+                  <Stop offset="100%" stopColor={dynBG} stopOpacity={0} />
                 </RadialGradient>
               </Defs>
               <Ellipse cx={50} cy={50} rx={50} ry={50} fill="url(#ambientGlow)" />
@@ -550,30 +555,30 @@ export default function InteractivePodium({ imageSource, benefits }: Props) {
               <Animated.View style={floatStyle}>
                 <Image source={imageSource} style={styles.img} contentFit="contain" transition={300} />
 
-                {/* Edge fade overlays — seamless blend into black */}
+                {/* Edge fade overlays — adaptive color blend */}
                 <LinearGradient
-                  colors={[BG, 'transparent']}
+                  colors={[dynBG, 'transparent']}
                   start={{ x: 0.5, y: 0 }}
                   end={{ x: 0.5, y: 0.18 }}
                   style={styles.edgeFade}
                   pointerEvents="none"
                 />
                 <LinearGradient
-                  colors={['transparent', BG]}
+                  colors={['transparent', dynBG]}
                   start={{ x: 0.5, y: 0.82 }}
                   end={{ x: 0.5, y: 1 }}
                   style={styles.edgeFade}
                   pointerEvents="none"
                 />
                 <LinearGradient
-                  colors={[BG, 'transparent']}
+                  colors={[dynBG, 'transparent']}
                   start={{ x: 0, y: 0.5 }}
                   end={{ x: 0.15, y: 0.5 }}
                   style={styles.edgeFade}
                   pointerEvents="none"
                 />
                 <LinearGradient
-                  colors={['transparent', BG]}
+                  colors={['transparent', dynBG]}
                   start={{ x: 0.85, y: 0.5 }}
                   end={{ x: 1, y: 0.5 }}
                   style={styles.edgeFade}
@@ -588,14 +593,14 @@ export default function InteractivePodium({ imageSource, benefits }: Props) {
             </GestureDetector>
           </Animated.View>
 
-          {/* Podium reflection — soft gold ellipse */}
+          {/* Podium reflection — color-adaptive ellipse */}
           <View style={styles.shadow}>
             <Svg width={SW * 0.55} height={32} viewBox={`0 0 ${SW * 0.55} 32`}>
               <Defs>
                 <RadialGradient id="pg" cx="50%" cy="50%" rx="50%" ry="50%">
-                  <Stop offset="0%" stopColor={colors.gold[500]} stopOpacity={0.35} />
-                  <Stop offset="50%" stopColor={colors.gold[700]} stopOpacity={0.08} />
-                  <Stop offset="100%" stopColor={colors.gold[900]} stopOpacity={0} />
+                  <Stop offset="0%" stopColor={dynGlow} stopOpacity={0.35} />
+                  <Stop offset="50%" stopColor={dynGlow} stopOpacity={0.08} />
+                  <Stop offset="100%" stopColor={dynBG} stopOpacity={0} />
                 </RadialGradient>
               </Defs>
               <Ellipse cx={SW * 0.275} cy={16} rx={SW * 0.275} ry={16} fill="url(#pg)" />

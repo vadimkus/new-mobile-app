@@ -23,6 +23,7 @@
 | [UI_COMPONENTS.md](./UI_COMPONENTS.md) | Reusable components, glass design system, animations |
 | [SKIN_ANALYSIS.md](./SKIN_ANALYSIS.md) | Skin AI tab, quiz flow, recommendations |
 | [TRAINING.md](./TRAINING.md) | Training content: PDFs, videos |
+| [ADAPTIVE_COLORS.md](./ADAPTIVE_COLORS.md) | Automatic color derivation from product images |
 
 ## Quick Reference
 
@@ -39,6 +40,8 @@ components/product/InteractivePodium.tsx  — Orbital constellation
 components/ui/GlassTabBar.tsx             — Custom tab bar + toast
 components/product/ProductMiniCard.tsx    — Compact product card
 components/product/ProductHeroCard.tsx    — Featured product card
+
+hooks/useImageColors.ts                   — Adaptive color derivation
 ```
 
 ### Local Image Overrides

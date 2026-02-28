@@ -73,16 +73,26 @@ Compact grid card with:
 - Price
 - "Add" button (gold, triggers toast)
 
-## Image Blending
+## Adaptive Image Colors
 
-Both card types use dark/black backgrounds for seamless transparent PNG integration:
+Both card types use the `useImageColors` hook to derive unique backgrounds from each product's image URL:
 
-| Card Type | Background |
-|-----------|------------|
-| ProductMiniCard | `#000000` (pure black) |
-| ProductHeroCard | Near-black gradient with subtle color tint |
+```typescript
+const pc = useImageColors(imageUrl);
+const cardBg = pc.isExtracted ? pc.dominant : '#000000';
+```
 
-This ensures cutout product images with transparent backgrounds appear to float naturally without visible edges.
+| Card Type | Color Source |
+|-----------|--------------|
+| ProductMiniCard | `pc.dominant` — unique dark tinted background per product |
+| ProductHeroCard | `pc.gradient` — unique dark gradient per product |
+
+**How it works:**
+1. Image URL is hashed to a deterministic hue (0-360)
+2. HSL color space generates a very dark tinted color (lightness ~6%)
+3. Results are cached — same URL = instant lookup
+
+This creates visual variety where each product has its own subtle color identity while maintaining the luxury dark theme. Local image overrides still get adaptive colors because the hook uses the API's `imageUrl`, not the displayed image.
 
 ## Local Image Overrides
 

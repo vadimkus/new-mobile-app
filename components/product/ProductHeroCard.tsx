@@ -5,6 +5,7 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, typography, radius, spacing, shadows, layout } from '../../constants/theme';
+import { useImageColors } from '../../hooks/useImageColors';
 
 interface ProductHeroCardProps {
   id: string;
@@ -39,6 +40,11 @@ export default function ProductHeroCard({
   onAddToBag,
   isFavorite = false,
 }: ProductHeroCardProps) {
+  const pc = useImageColors(imageUrl);
+  const dynamicGradient: readonly [string, string] = pc.isExtracted
+    ? pc.gradient
+    : gradientColors;
+
   return (
     <TouchableOpacity
       onPress={() => {
@@ -49,7 +55,7 @@ export default function ProductHeroCard({
       style={styles.container}
     >
       <LinearGradient
-        colors={[...gradientColors]}
+        colors={[...dynamicGradient]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}

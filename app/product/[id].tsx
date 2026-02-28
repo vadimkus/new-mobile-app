@@ -223,6 +223,7 @@ export default function ProductPodiumScreen() {
                     : { uri: product.imageUrl };
                 })()
               }
+              imageUri={product.imageUrl}
               benefits={product.benefits}
             />
           </Animated.View>

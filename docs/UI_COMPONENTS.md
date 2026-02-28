@@ -178,6 +178,55 @@ Full-screen overlay when app update is required:
 <ForceUpdateScreen storeUrl="https://..." />
 ```
 
+## Adaptive Image Colors
+
+The `useImageColors` hook (`hooks/useImageColors.ts`) provides automatic color derivation for product backgrounds.
+
+### How It Works
+
+```typescript
+import { useImageColors } from '../hooks/useImageColors';
+
+const pc = useImageColors(imageUrl);
+// pc.dominant    — dark tinted background color
+// pc.darkMuted   — even darker variant for gradients
+// pc.vibrant     — bright accent for glow effects
+// pc.gradient    — [dominant, darkMuted] tuple
+// pc.glowColor   — same as vibrant
+// pc.isExtracted — true when colors are ready
+```
+
+### Technology
+
+**URL-based deterministic color derivation** — zero native dependencies, works in Expo Go.
+
+1. Hashes the product image URL to generate a hue (0-360)
+2. Derives colors using HSL color space:
+   - **Dominant**: lightness 6%, saturation 50% (very dark tinted)
+   - **Dark muted**: lightness 3.5% (even darker)
+   - **Vibrant**: lightness 50% (bright accent)
+3. Results cached in memory — same URL = instant lookup
+
+### Integration
+
+| Component | What Adapts |
+|-----------|-------------|
+| `InteractivePodium` | Ambient glow, edge fades, podium reflection |
+| `ProductMiniCard` | Card background color |
+| `ProductHeroCard` | Gradient background |
+
+### Example
+
+```typescript
+// ProductMiniCard.tsx
+const pc = useImageColors(imageUrl);
+const cardBg = pc.isExtracted ? pc.dominant : '#000000';
+
+<View style={[styles.borderGlow, { backgroundColor: cardBg }]}>
+```
+
+Every product gets a unique dark color palette based on its image URL, creating visual variety while maintaining the luxury dark theme.
+
 ## Theme Constants
 
 All design tokens in `constants/theme.ts`:

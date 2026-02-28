@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, typography, radius, spacing, shadows, layout } from '../../constants/theme';
+import { useImageColors } from '../../hooks/useImageColors';
 
 interface ProductMiniCardProps {
   id: string;
@@ -35,6 +36,8 @@ export default function ProductMiniCard({
   isFavorite = false,
 }: ProductMiniCardProps) {
   const cardWidth = layout.cardWidth;
+  const pc = useImageColors(imageUrl);
+  const cardBg = pc.isExtracted ? pc.dominant : '#000000';
 
   return (
     <TouchableOpacity
@@ -45,7 +48,7 @@ export default function ProductMiniCard({
       activeOpacity={0.8}
       style={[styles.container, { width: cardWidth }]}
     >
-      <View style={styles.borderGlow}>
+      <View style={[styles.borderGlow, { backgroundColor: cardBg }]}>
         <View style={styles.inner}>
           <TouchableOpacity
             style={styles.favoriteBtn}
