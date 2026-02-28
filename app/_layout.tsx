@@ -1,13 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
 import { colors } from '../constants/theme';
-import { AuthProvider } from '../contexts/AuthContext';
+import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { CartProvider } from '../contexts/CartContext';
 import { FavoritesProvider } from '../contexts/FavoritesContext';
+import { registerForPushNotificationsAsync, addNotificationResponseListener } from '../services/pushNotifications';
+import { registerPushToken } from '../services/api';
+import { router } from 'expo-router';
 import VideoSplash from '../components/ui/VideoSplash';
+
+function PushRegistration() {
+  const { token } = useAuth();
+  const registered = useRef(false);
+
+  useEffect(() => {
+    if (registered.current) return;
+    registered.current = true;
+
+    (async () => {
+      const result = await registerForPushNotificationsAsync();
+      if (result.success && result.token && token) {
+        await registerPushToken(token, result.token);
+      }
+    })();
+
+    const sub = addNotificationResponseListener((response) => {
+      const data = response.notification.request.content.data as any;
+      if (data?.screen) {
+        router.push(data.screen);
+      }
+    });
+    return () => sub.remove();
+  }, [token]);
+
+  return null;
+}
 
 export default function RootLayout() {
   const [showSplash, setShowSplash] = useState(true);
@@ -17,6 +47,7 @@ export default function RootLayout() {
       <AuthProvider>
         <CartProvider>
           <FavoritesProvider>
+            <PushRegistration />
             <StatusBar style="light" />
             <Stack
               screenOptions={{
@@ -36,6 +67,10 @@ export default function RootLayout() {
               <Stack.Screen
                 name="ingredient/[id]"
                 options={{ animation: 'fade_from_bottom', presentation: 'modal' }}
+              />
+              <Stack.Screen
+                name="checkout"
+                options={{ animation: 'slide_from_right' }}
               />
             </Stack>
 

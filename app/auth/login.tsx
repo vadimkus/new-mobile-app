@@ -20,10 +20,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
 import { colors, typography, spacing, radius, shadows } from '../../constants/theme';
+import AUTH_CONFIG from '../../config/auth';
 import GoldButton from '../../components/ui/GoldButton';
 import GlassCard from '../../components/ui/GlassCard';
 import { useAuth } from '../../contexts/AuthContext';
+
+WebBrowser.maybeCompleteAuthSession();
 
 const UAE_EMIRATES = [
   'Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman',
@@ -33,7 +39,7 @@ const UAE_EMIRATES = [
 const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 export default function LoginScreen() {
-  const { loginWithEmail: authLogin, register: authRegister } = useAuth();
+  const { loginWithEmail: authLogin, register: authRegister, loginWithGoogleToken: authLoginGoogle, loginWithAppleToken: authLoginApple } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -117,13 +123,78 @@ export default function LoginScreen() {
     }
   };
 
-  const handleSocialLogin = (provider: string) => {
+  const [_googleReq, googleResponse, googlePromptAsync] = Google.useAuthRequest({
+    clientId: AUTH_CONFIG.GOOGLE_OAUTH.webClientId,
+    iosClientId: AUTH_CONFIG.GOOGLE_OAUTH.iosClientId,
+    androidClientId: AUTH_CONFIG.GOOGLE_OAUTH.androidClientId || undefined,
+  });
+
+  React.useEffect(() => {
+    if (googleResponse?.type === 'success') {
+      const idToken = googleResponse.authentication?.idToken;
+      if (idToken) {
+        handleGoogleSuccess(idToken);
+      }
+    }
+  }, [googleResponse]);
+
+  const handleGoogleSuccess = async (idToken: string) => {
+    setLoading(true);
+    try {
+      const result = await authLoginGoogle(idToken);
+      if (result.success) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        router.replace('/(tabs)/discover');
+      } else {
+        Alert.alert('Error', result.error || 'Google login failed');
+      }
+    } catch (e: any) {
+      Alert.alert('Error', e?.message || 'Google login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (!privacyConsent) {
       Alert.alert('Privacy Policy', 'Please accept the Privacy Policy to continue');
       return;
     }
-    Alert.alert('Coming Soon', `${provider} login will be connected to real OAuth`);
+    googlePromptAsync();
+  };
+
+  const handleAppleLogin = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (!privacyConsent) {
+      Alert.alert('Privacy Policy', 'Please accept the Privacy Policy to continue');
+      return;
+    }
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      if (credential.identityToken) {
+        setLoading(true);
+        const fullName = [credential.fullName?.givenName, credential.fullName?.familyName]
+          .filter(Boolean).join(' ') || undefined;
+        const result = await authLoginApple({ identityToken: credential.identityToken, fullName });
+        if (result.success) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          router.replace('/(tabs)/discover');
+        } else {
+          Alert.alert('Error', result.error || 'Apple login failed');
+        }
+        setLoading(false);
+      }
+    } catch (e: any) {
+      if (e?.code !== 'ERR_REQUEST_CANCELED') {
+        Alert.alert('Error', e?.message || 'Apple login failed');
+      }
+    }
   };
 
   const toggleMode = () => {
@@ -172,7 +243,7 @@ export default function LoginScreen() {
               {/* Google */}
               <TouchableOpacity
                 style={styles.socialButton}
-                onPress={() => handleSocialLogin('Google')}
+                onPress={handleGoogleLogin}
                 activeOpacity={0.8}
               >
                 <View style={styles.googleIcon}>
@@ -185,7 +256,7 @@ export default function LoginScreen() {
               {Platform.OS === 'ios' && (
                 <TouchableOpacity
                   style={[styles.socialButton, styles.appleButton]}
-                  onPress={() => handleSocialLogin('Apple')}
+                  onPress={handleAppleLogin}
                   activeOpacity={0.8}
                 >
                   <Ionicons name="logo-apple" size={18} color="#000000" />

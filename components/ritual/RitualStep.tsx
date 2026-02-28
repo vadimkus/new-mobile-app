@@ -17,6 +17,7 @@ interface RitualStepProps {
   completed: boolean;
   isActive: boolean;
   isLast: boolean;
+  onApply?: () => void;
 }
 
 export default function RitualStep({
@@ -30,6 +31,7 @@ export default function RitualStep({
   completed,
   isActive,
   isLast,
+  onApply,
 }: RitualStepProps) {
   const isUpcoming = !completed && !isActive;
 
@@ -102,7 +104,7 @@ export default function RitualStep({
 
             {isActive && (
               <View style={styles.activeActions}>
-                <GoldButton title="Apply Now" onPress={() => {}} size="sm" />
+                <GoldButton title="Apply Now" onPress={onApply || (() => {})} size="sm" />
                 {waitTime && (
                   <Text style={styles.timerText}>
                     {Math.floor(waitTime / 60)}:{String(waitTime % 60).padStart(2, '0')}

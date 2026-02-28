@@ -101,9 +101,7 @@ export default function DiscoverScreen() {
             onChangeText={setSearchQuery}
             selectionColor={colors.gold[500]}
           />
-          <TouchableOpacity>
-            <Ionicons name="mic-outline" size={20} color={colors.gold[500]} />
-          </TouchableOpacity>
+          <Ionicons name="mic-outline" size={20} color={colors.gold[500]} />
         </Animated.View>
 
         {/* Categories */}
@@ -156,7 +154,7 @@ export default function DiscoverScreen() {
         {/* Product Grid */}
         {gridProducts.length > 0 && (
           <Animated.View entering={FadeInDown.duration(700).delay(450)}>
-            <SectionHeader title="Popular" actionLabel="See All" onAction={() => {}} />
+            <SectionHeader title="Popular" actionLabel="See All" onAction={() => setActiveCategory('all')} />
             <View style={styles.grid}>
               {gridProducts.map((product, index) => (
                 <Animated.View

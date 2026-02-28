@@ -76,7 +76,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.quickCard}
-            onPress={() => {}}
+            onPress={() => router.push('/profile/favorites')}
             activeOpacity={0.8}
           >
             <Ionicons name="heart-outline" size={22} color={colors.gold[500]} />
@@ -113,6 +113,7 @@ export default function ProfileScreen() {
             <MenuRow icon="language-outline" label="Language" rightText="English" onPress={() => router.push('/profile/language')} />
             <MenuRow icon="help-circle-outline" label="Help & Support" onPress={() => router.push('/profile/help')} />
             <MenuRow icon="chatbubbles-outline" label="Contact Us" onPress={() => router.push('/profile/contact')} />
+            <MenuRow icon="gift-outline" label="Promotions" subtitle="Special offers & deals" onPress={() => router.push('/profile/promo')} />
             <MenuRow icon="school-outline" label="Training Materials" onPress={() => router.push('/profile/training')} />
             <MenuRow icon="information-circle-outline" label="About GENOSYS" onPress={() => router.push('/profile/about')} />
           </GlassCard>

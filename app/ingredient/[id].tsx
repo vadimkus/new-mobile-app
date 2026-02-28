@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -25,6 +25,8 @@ import Animated, {
 import Svg, { Circle, Line } from 'react-native-svg';
 import { colors, typography, spacing, radius, layout } from '../../constants/theme';
 import { DEMO_PRODUCTS } from '../../constants/mockData';
+import { fetchProductById, type Product as ApiProduct } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 import GlassCard from '../../components/ui/GlassCard';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -129,12 +131,30 @@ function IngredientNode({ name, color, x, y, size, index, isSelected, onPress }:
 
 export default function IngredientExplorerScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user, token } = useAuth();
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [apiProduct, setApiProduct] = useState<ApiProduct | null>(null);
 
-  const product = useMemo(
+  useEffect(() => {
+    (async () => {
+      try {
+        const userCtx = user ? { id: user.id, token: token ?? undefined } : undefined;
+        const p = await fetchProductById(id!, userCtx);
+        if (p) setApiProduct(p);
+      } catch {}
+    })();
+  }, [id, user, token]);
+
+  const demoProduct = useMemo(
     () => DEMO_PRODUCTS.find((p) => p.id === id) ?? DEMO_PRODUCTS[1],
     [id],
   );
+
+  const product = {
+    ...demoProduct,
+    name: apiProduct?.name || demoProduct.name,
+    imageUrl: apiProduct?.imageUrl || apiProduct?.images?.[0] || demoProduct.imageUrl,
+  };
 
   const ingredients = product.ingredients;
   const selected = ingredients[selectedIndex];
@@ -291,14 +311,10 @@ export default function IngredientExplorerScreen() {
                 </View>
 
                 {/* Cross-sell link */}
-                <TouchableOpacity style={styles.crossSell}>
+                <TouchableOpacity style={styles.crossSell} onPress={() => router.push('/(tabs)/discover')}>
                   <Text style={styles.crossSellText}>
-                    Found in 12 GENOSYS products →
+                    Browse GENOSYS products →
                   </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.clinicalLink}>
-                  <Text style={styles.clinicalLinkText}>See Clinical Studies</Text>
                 </TouchableOpacity>
               </GlassCard>
             </Animated.View>
@@ -487,14 +503,5 @@ const styles = StyleSheet.create({
     ...typography.headline,
     color: colors.gold[500],
     fontSize: 15,
-  },
-  clinicalLink: {
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-  },
-  clinicalLinkText: {
-    ...typography.bodySmall,
-    color: colors.gold[500],
-    textDecorationLine: 'underline',
   },
 });

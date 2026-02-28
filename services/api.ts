@@ -280,6 +280,66 @@ export const loginWithGoogle = async (idToken: string) => {
   return { success: true, user: body.user, token: body.token };
 };
 
+// ─── Profile Update ─────────────────────────────────────────────────────────
+
+export const updateUserProfile = async (
+  token: string,
+  updates: { name?: string; phone?: string; address?: string; emirate?: string; birthday?: string },
+) => {
+  const res = await authenticatedFetch(`${API}/auth/profile`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  }, token);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) return { success: false, error: body?.error || body?.message || 'Update failed' };
+  return { success: true, user: body.user ?? body };
+};
+
+// ─── Order Creation ─────────────────────────────────────────────────────────
+
+export interface CreateOrderPayload {
+  items: { productId: string | number; quantity: number; variant?: string; price: number }[];
+  shippingAddress: { name: string; address: string; emirate: string; phone: string };
+  paymentMethod: 'cod' | 'card';
+  promoCode?: string;
+  notes?: string;
+}
+
+export const createOrder = async (token: string, payload: CreateOrderPayload) => {
+  const res = await authenticatedFetch(`${API}/orders`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }, token);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) return { success: false, error: body?.error || body?.message || 'Order creation failed' };
+  return { success: true, order: body.order ?? body.data ?? body };
+};
+
+// ─── Push Token Registration ────────────────────────────────────────────────
+
+export const registerPushToken = async (token: string, pushToken: string) => {
+  try {
+    await authenticatedFetch(`${API}/push-token`, {
+      method: 'POST',
+      body: JSON.stringify({ pushToken }),
+    }, token);
+    log.debug('Push token registered');
+  } catch (e: any) {
+    log.warn('Push token registration failed', e?.message);
+  }
+};
+
+// ─── Delete Account ─────────────────────────────────────────────────────────
+
+export const deleteAccount = async (token: string) => {
+  const res = await authenticatedFetch(`${API}/auth/delete-account`, {
+    method: 'DELETE',
+  }, token);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) return { success: false, error: body?.error || 'Failed to delete account' };
+  return { success: true };
+};
+
 export const loginWithApple = async (payload: { identityToken: string; fullName?: string }) => {
   const res = await fetch(`${API}/auth/apple`, {
     method: 'POST',
@@ -297,8 +357,10 @@ export default {
   fetchCategories,
   fetchShippingRates,
   fetchUserProfile,
+  updateUserProfile,
   fetchUserOrders,
   fetchUserOrderById,
+  createOrder,
   fetchPromo,
   searchProducts,
   fetchTraining,
@@ -306,4 +368,6 @@ export default {
   registerUser,
   loginWithGoogle,
   loginWithApple,
+  registerPushToken,
+  deleteAccount,
 };

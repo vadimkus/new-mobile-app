@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -121,7 +121,7 @@ export default function BagScreen() {
             <Animated.View entering={FadeInDown.duration(500).delay(500)} style={styles.checkoutSection}>
               <GoldButton
                 title="Proceed to Checkout"
-                onPress={() => Alert.alert('Checkout', 'Payment integration coming in Phase 2')}
+                onPress={() => router.push('/checkout')}
                 fullWidth
                 size="lg"
               />
