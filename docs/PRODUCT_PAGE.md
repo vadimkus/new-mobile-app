@@ -17,6 +17,9 @@ The `InteractivePodium` component (`components/product/InteractivePodium.tsx`) i
 | **Depth Simulation** | Pills at "back" (top) are smaller/dimmer; pills at "front" (bottom) are full-size |
 | **Gyroscope Parallax** | Product image shifts subtly with device tilt via `useAnimatedSensor` |
 | **Ambient Effects** | Gold glow pulse, sparkle particles, orbit ring hint |
+| **Edge Fade Blending** | LinearGradient overlays on all four edges fade image into black background |
+| **SVG Radial Glow** | Smooth radial gradient behind product for ambient lighting effect |
+| **Z-Index Layering** | Pills always render on top of product image (zIndex 10-30 vs image zIndex 1) |
 
 ### Pill Interaction
 
@@ -54,9 +57,45 @@ Dependencies:
 - expo-haptics (feedback)
 ```
 
+## Cutout Image Blending
+
+For transparent PNG cutout images on black backgrounds:
+
+### Edge Fade Gradients
+
+Four `LinearGradient` overlays on the product image, one per edge:
+
+```typescript
+<LinearGradient
+  colors={[BG, 'transparent']}  // BG = colors.bg.primary (#0A0A0A)
+  start={{ x: 0.5, y: 0 }}
+  end={{ x: 0.5, y: 0.18 }}
+  style={styles.edgeFade}
+/>
+```
+
+- **Top edge**: fades from black to transparent (18% of height)
+- **Bottom edge**: fades from transparent to black
+- **Left/Right edges**: 15% fade width
+
+This creates a soft vignette that dissolves hard edges seamlessly.
+
+### SVG Ambient Glow
+
+```typescript
+<RadialGradient id="ambientGlow" cx="50%" cy="50%" rx="50%" ry="50%">
+  <Stop offset="0%" stopColor={gold} stopOpacity={0.18} />
+  <Stop offset="35%" stopColor={gold} stopOpacity={0.08} />
+  <Stop offset="70%" stopColor={gold} stopOpacity={0.02} />
+  <Stop offset="100%" stopColor="#000" stopOpacity={0} />
+</RadialGradient>
+```
+
+Creates realistic ambient lighting behind the floating product.
+
 ## Expandable Sections
 
-Both "About" and "Application Method" sections are collapsible accordions.
+Three collapsible accordion sections: About, Application Method, and Customer Reviews.
 
 ### About Section
 
@@ -69,6 +108,14 @@ Both "About" and "Application Method" sections are collapsible accordions.
 - **Collapsed**: Shows hand icon + "Application Method" title + chevron-down
 - **Expanded**: Reveals numbered steps (parsed from `howToUse` API field) + optional directions note
 - **Step parsing**: Auto-detects numbered lists, bullet points, or sentences and renders as numbered steps
+- **Animation**: `LayoutAnimation` for smooth expand/collapse
+
+### Customer Reviews Section
+
+- **Collapsed**: Shows chatbubbles icon + "Customer Reviews" title + review count badge + average rating + chevron-down
+- **Expanded**: Reveals summary stats, review list, and write-review form
+- **Write Review**: Star rating picker, title input, comment textarea (login required)
+- **Delete**: Users can delete their own reviews
 - **Animation**: `LayoutAnimation` for smooth expand/collapse
 
 ## Local Image Overrides

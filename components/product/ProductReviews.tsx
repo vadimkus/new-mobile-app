@@ -7,6 +7,9 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  LayoutAnimation,
+  UIManager,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -20,6 +23,10 @@ import {
   type Review,
 } from '../../services/api';
 import GlassCard from '../ui/GlassCard';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 function Stars({ rating, size = 14, interactive, onChange }: {
   rating: number;
@@ -59,6 +66,7 @@ export default function ProductReviews({ productId }: Props) {
   const [average, setAverage] = useState(0);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   const [showForm, setShowForm] = useState(false);
   const [formRating, setFormRating] = useState(5);
@@ -126,6 +134,11 @@ export default function ProductReviews({ productId }: Props) {
     ]);
   };
 
+  const toggleExpand = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.create(280, 'easeInEaseOut', 'opacity'));
+    setExpanded((v) => !v);
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingWrap}>
@@ -136,127 +149,201 @@ export default function ProductReviews({ productId }: Props) {
 
   return (
     <Animated.View entering={FadeInDown.duration(500)} style={styles.container}>
-      <Text style={styles.sectionTitle}>{t('reviews.title')}</Text>
-
-      {/* Summary */}
-      <View style={styles.summaryRow}>
-        <View style={styles.summaryLeft}>
-          <Text style={styles.avgText}>{average.toFixed(1)}</Text>
-          <Stars rating={average} size={18} />
-          <Text style={styles.countText}>
-            {count} {count === 1 ? t('reviews.review') : t('reviews.reviewsPlural')}
-          </Text>
-        </View>
-        {!userReview && (
-          <TouchableOpacity
-            style={styles.writeBtn}
-            onPress={() => {
-              if (!user) {
-                Alert.alert(t('reviews.loginRequired'), t('reviews.loginToReview'));
-                return;
-              }
-              setShowForm(!showForm);
-            }}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="create-outline" size={16} color={colors.gold[500]} />
-            <Text style={styles.writeBtnText}>{t('reviews.writeReview')}</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Write/Edit Form */}
-      {showForm && (
-        <GlassCard style={styles.formCard}>
-          <Text style={styles.formLabel}>{t('reviews.rating')}</Text>
-          <Stars rating={formRating} size={28} interactive onChange={setFormRating} />
-
-          <Text style={[styles.formLabel, { marginTop: spacing.md }]}>{t('reviews.reviewTitle')}</Text>
-          <TextInput
-            style={styles.formInput}
-            value={formTitle}
-            onChangeText={setFormTitle}
-            placeholder={t('reviews.titlePlaceholder')}
-            placeholderTextColor={colors.text.tertiary}
-            maxLength={100}
-          />
-
-          <Text style={[styles.formLabel, { marginTop: spacing.md }]}>{t('reviews.yourReview')}</Text>
-          <TextInput
-            style={[styles.formInput, styles.formTextArea]}
-            value={formComment}
-            onChangeText={setFormComment}
-            placeholder={t('reviews.reviewPlaceholder')}
-            placeholderTextColor={colors.text.tertiary}
-            multiline
-            maxLength={1000}
-          />
-          <Text style={styles.charCount}>{t('reviews.minimumLabel')}</Text>
-
-          <TouchableOpacity
-            style={[styles.submitBtn, submitting && { opacity: 0.6 }]}
-            onPress={handleSubmit}
-            disabled={submitting}
-            activeOpacity={0.8}
-          >
-            {submitting ? (
-              <ActivityIndicator color={colors.bg.primary} size="small" />
-            ) : (
-              <Text style={styles.submitBtnText}>{t('reviews.submitReview')}</Text>
-            )}
-          </TouchableOpacity>
-        </GlassCard>
-      )}
-
-      {/* Review List */}
-      {reviews.length === 0 && !showForm && (
-        <Text style={styles.emptyText}>{t('reviews.noReviews')}</Text>
-      )}
-
-      {reviews.map((review, index) => (
-        <Animated.View
-          key={String(review.id)}
-          entering={FadeInDown.duration(400).delay(index * 80)}
+      <GlassCard>
+        {/* Expandable header */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={toggleExpand}
+          style={styles.header}
         >
-          <GlassCard style={styles.reviewCard}>
-            <View style={styles.reviewHeader}>
-              <View style={{ flex: 1 }}>
-                <Stars rating={review.rating} size={14} />
-                {review.title ? <Text style={styles.reviewTitle}>{review.title}</Text> : null}
+          <View style={styles.headerIcon}>
+            <Ionicons name="chatbubbles-outline" size={18} color={colors.gold[500]} />
+          </View>
+          <Text style={styles.headerTitle}>Customer Reviews</Text>
+          {count > 0 && (
+            <View style={styles.headerBadge}>
+              <Text style={styles.headerBadgeText}>{count}</Text>
+            </View>
+          )}
+          {count > 0 && (
+            <View style={styles.headerStars}>
+              <Ionicons name="star" size={12} color={colors.gold[500]} />
+              <Text style={styles.headerAvg}>{average.toFixed(1)}</Text>
+            </View>
+          )}
+          <Ionicons
+            name={expanded ? 'chevron-up' : 'chevron-down'}
+            size={18}
+            color={colors.text.tertiary}
+          />
+        </TouchableOpacity>
+
+        {/* Expanded content */}
+        {expanded && (
+          <View style={styles.body}>
+            {/* Summary */}
+            <View style={styles.summaryRow}>
+              <View style={styles.summaryLeft}>
+                <Text style={styles.avgText}>{average.toFixed(1)}</Text>
+                <Stars rating={average} size={18} />
+                <Text style={styles.countText}>
+                  {count} {count === 1 ? t('reviews.review') : t('reviews.reviewsPlural')}
+                </Text>
               </View>
-              {userReview && String(review.id) === String(userReview.id) && (
-                <TouchableOpacity onPress={() => handleDelete(String(review.id))} hitSlop={12}>
-                  <Ionicons name="trash-outline" size={16} color={colors.status.error} />
+              {!userReview && (
+                <TouchableOpacity
+                  style={styles.writeBtn}
+                  onPress={() => {
+                    if (!user) {
+                      Alert.alert(t('reviews.loginRequired'), t('reviews.loginToReview'));
+                      return;
+                    }
+                    setShowForm(!showForm);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="create-outline" size={16} color={colors.gold[500]} />
+                  <Text style={styles.writeBtnText}>{t('reviews.writeReview')}</Text>
                 </TouchableOpacity>
               )}
             </View>
-            <Text style={styles.reviewComment}>{review.comment}</Text>
-            <View style={styles.reviewFooter}>
-              <Text style={styles.reviewAuthor}>{review.userName || 'Customer'}</Text>
-              {review.createdAt && (
-                <Text style={styles.reviewDate}>
-                  {new Date(review.createdAt).toLocaleDateString()}
-                </Text>
-              )}
-            </View>
-          </GlassCard>
-        </Animated.View>
-      ))}
+
+            {/* Write/Edit Form */}
+            {showForm && (
+              <View style={styles.formCard}>
+                <Text style={styles.formLabel}>{t('reviews.rating')}</Text>
+                <Stars rating={formRating} size={28} interactive onChange={setFormRating} />
+
+                <Text style={[styles.formLabel, { marginTop: spacing.md }]}>{t('reviews.reviewTitle')}</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={formTitle}
+                  onChangeText={setFormTitle}
+                  placeholder={t('reviews.titlePlaceholder')}
+                  placeholderTextColor={colors.text.tertiary}
+                  maxLength={100}
+                />
+
+                <Text style={[styles.formLabel, { marginTop: spacing.md }]}>{t('reviews.yourReview')}</Text>
+                <TextInput
+                  style={[styles.formInput, styles.formTextArea]}
+                  value={formComment}
+                  onChangeText={setFormComment}
+                  placeholder={t('reviews.reviewPlaceholder')}
+                  placeholderTextColor={colors.text.tertiary}
+                  multiline
+                  maxLength={1000}
+                />
+                <Text style={styles.charCount}>{t('reviews.minimumLabel')}</Text>
+
+                <TouchableOpacity
+                  style={[styles.submitBtn, submitting && { opacity: 0.6 }]}
+                  onPress={handleSubmit}
+                  disabled={submitting}
+                  activeOpacity={0.8}
+                >
+                  {submitting ? (
+                    <ActivityIndicator color={colors.bg.primary} size="small" />
+                  ) : (
+                    <Text style={styles.submitBtnText}>{t('reviews.submitReview')}</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Review List */}
+            {reviews.length === 0 && !showForm && (
+              <Text style={styles.emptyText}>{t('reviews.noReviews')}</Text>
+            )}
+
+            {reviews.map((review, index) => (
+              <View key={String(review.id)} style={styles.reviewCard}>
+                <View style={styles.reviewHeader}>
+                  <View style={{ flex: 1 }}>
+                    <Stars rating={review.rating} size={14} />
+                    {review.title ? <Text style={styles.reviewTitle}>{review.title}</Text> : null}
+                  </View>
+                  {userReview && String(review.id) === String(userReview.id) && (
+                    <TouchableOpacity onPress={() => handleDelete(String(review.id))} hitSlop={12}>
+                      <Ionicons name="trash-outline" size={16} color={colors.status.error} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <Text style={styles.reviewComment}>{review.comment}</Text>
+                <View style={styles.reviewFooter}>
+                  <Text style={styles.reviewAuthor}>{review.userName || 'Customer'}</Text>
+                  {review.createdAt && (
+                    <Text style={styles.reviewDate}>
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+      </GlassCard>
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { marginTop: spacing.xl },
+  container: { marginBottom: spacing.lg },
   loadingWrap: { paddingVertical: spacing.xxl, alignItems: 'center' },
-  sectionTitle: { ...typography.title3, marginBottom: spacing.lg },
+
+  header: { flexDirection: 'row', alignItems: 'center' },
+  headerIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(201, 169, 110, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
+  headerTitle: { ...typography.headline, flex: 1 },
+  headerBadge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: 'rgba(201, 169, 110, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+    marginRight: spacing.sm,
+  },
+  headerBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.gold[500],
+  },
+  headerStars: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginRight: spacing.sm,
+  },
+  headerAvg: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.gold[500],
+  },
+
+  body: { marginTop: spacing.md },
+
   summaryRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg },
   summaryLeft: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   avgText: { ...typography.title2, fontSize: 28, color: colors.gold[500] },
   countText: { ...typography.caption1, color: colors.text.secondary },
   writeBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: spacing.xs, paddingHorizontal: spacing.md, borderWidth: 1, borderColor: colors.gold[500] + '40', borderRadius: radius.md },
   writeBtnText: { ...typography.caption1, color: colors.gold[500], fontWeight: '600' },
-  formCard: { marginBottom: spacing.lg },
+
+  formCard: {
+    marginBottom: spacing.lg,
+    paddingTop: spacing.md,
+    borderTopWidth: 0.5,
+    borderTopColor: colors.glass.border,
+  },
   formLabel: { ...typography.caption1, color: colors.text.secondary, fontWeight: '600', marginBottom: spacing.xs },
   formInput: {
     ...typography.bodySmall,
@@ -278,8 +365,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   submitBtnText: { ...typography.label, color: colors.bg.primary, fontWeight: '700' },
+
   emptyText: { ...typography.bodySmall, color: colors.text.tertiary, textAlign: 'center', paddingVertical: spacing.xl },
-  reviewCard: { marginBottom: spacing.md },
+
+  reviewCard: {
+    paddingTop: spacing.md,
+    borderTopWidth: 0.5,
+    borderTopColor: colors.glass.border,
+    marginBottom: spacing.sm,
+  },
   reviewHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
   reviewTitle: { ...typography.label, marginTop: spacing.xs },
   reviewComment: { ...typography.bodySmall, color: colors.text.secondary, marginTop: spacing.sm, lineHeight: 20 },

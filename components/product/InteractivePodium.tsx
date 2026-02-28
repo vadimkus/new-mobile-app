@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import { Image, type ImageSource } from 'expo-image';
 import { BlurView } from 'expo-blur';
-import Svg, { Ellipse, Defs, RadialGradient, Stop, Line } from 'react-native-svg';
+import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Ellipse, Defs, RadialGradient, Stop, Line, Rect } from 'react-native-svg';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -61,6 +62,7 @@ const EMOJIS = ['✨', '💧', '🌿', '🔬', '💎', '🧬', '☀️'];
 const GOLD = colors.gold[500];
 const GOLD_DIM = 'rgba(201, 169, 110, 0.12)';
 const GOLD_GLOW = 'rgba(201, 169, 110, 0.35)';
+const BG = colors.bg.primary;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -158,7 +160,7 @@ function OrbitPill({
       left: isMe ? withSpring(CX - 70, SPRING_ORBIT) : x,
       top: isMe ? withSpring(CY + IMG_H / 2 + 20, SPRING_ORBIT) : y,
       opacity: withTiming(dimmed ? 0.15 : depthOpacity, { duration: 250 }),
-      zIndex: isMe ? 50 : Math.round(depth * 20),
+      zIndex: isMe ? 50 : 10 + Math.round(depth * 20),
       transform: [
         { scale: withSpring(isMe ? 1.1 : depthScale, SPRING_SELECT) },
       ],
@@ -519,9 +521,19 @@ export default function InteractivePodium({ imageSource, benefits }: Props) {
             <Sparkle key={i} x={sp.x} y={sp.y} size={sp.size} d={sp.delay} />
           ))}
 
-          {/* Ambient glow */}
+          {/* Ambient radial glow — SVG for smooth radial falloff */}
           <Animated.View style={[styles.glow, glowStyle]} pointerEvents="none">
-            <View style={styles.glowCircle} />
+            <Svg width={SW * 0.62} height={SW * 0.62} viewBox={`0 0 100 100`}>
+              <Defs>
+                <RadialGradient id="ambientGlow" cx="50%" cy="50%" rx="50%" ry="50%">
+                  <Stop offset="0%" stopColor={colors.gold[500]} stopOpacity={0.18} />
+                  <Stop offset="35%" stopColor={colors.gold[600]} stopOpacity={0.08} />
+                  <Stop offset="70%" stopColor={colors.gold[800]} stopOpacity={0.02} />
+                  <Stop offset="100%" stopColor="#000000" stopOpacity={0} />
+                </RadialGradient>
+              </Defs>
+              <Ellipse cx={50} cy={50} rx={50} ry={50} fill="url(#ambientGlow)" />
+            </Svg>
           </Animated.View>
 
           {/* Connection line to selected pill */}
@@ -536,6 +548,37 @@ export default function InteractivePodium({ imageSource, benefits }: Props) {
             <GestureDetector gesture={imgTap}>
               <Animated.View style={floatStyle}>
                 <Image source={imageSource} style={styles.img} contentFit="contain" transition={300} />
+
+                {/* Edge fade overlays — seamless blend into black */}
+                <LinearGradient
+                  colors={[BG, 'transparent']}
+                  start={{ x: 0.5, y: 0 }}
+                  end={{ x: 0.5, y: 0.18 }}
+                  style={styles.edgeFade}
+                  pointerEvents="none"
+                />
+                <LinearGradient
+                  colors={['transparent', BG]}
+                  start={{ x: 0.5, y: 0.82 }}
+                  end={{ x: 0.5, y: 1 }}
+                  style={styles.edgeFade}
+                  pointerEvents="none"
+                />
+                <LinearGradient
+                  colors={[BG, 'transparent']}
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 0.15, y: 0.5 }}
+                  style={styles.edgeFade}
+                  pointerEvents="none"
+                />
+                <LinearGradient
+                  colors={['transparent', BG]}
+                  start={{ x: 0.85, y: 0.5 }}
+                  end={{ x: 1, y: 0.5 }}
+                  style={styles.edgeFade}
+                  pointerEvents="none"
+                />
+
                 {/* Tap hint ring */}
                 <View style={styles.imgTapHint} pointerEvents="none">
                   <View style={styles.imgTapRing} />
@@ -544,13 +587,13 @@ export default function InteractivePodium({ imageSource, benefits }: Props) {
             </GestureDetector>
           </Animated.View>
 
-          {/* Podium reflection */}
+          {/* Podium reflection — soft gold ellipse */}
           <View style={styles.shadow}>
             <Svg width={SW * 0.55} height={32} viewBox={`0 0 ${SW * 0.55} 32`}>
               <Defs>
                 <RadialGradient id="pg" cx="50%" cy="50%" rx="50%" ry="50%">
-                  <Stop offset="0%" stopColor={colors.gold[500]} stopOpacity={0.4} />
-                  <Stop offset="60%" stopColor={colors.gold[700]} stopOpacity={0.1} />
+                  <Stop offset="0%" stopColor={colors.gold[500]} stopOpacity={0.35} />
+                  <Stop offset="50%" stopColor={colors.gold[700]} stopOpacity={0.08} />
                   <Stop offset="100%" stopColor={colors.gold[900]} stopOpacity={0} />
                 </RadialGradient>
               </Defs>
@@ -603,17 +646,11 @@ const styles = StyleSheet.create({
   // Glow
   glow: {
     position: 'absolute',
-    left: CX - SW * 0.28,
-    top: CY - SW * 0.28,
-    width: SW * 0.56,
-    height: SW * 0.56,
+    left: CX - SW * 0.31,
+    top: CY - SW * 0.31,
+    width: SW * 0.62,
+    height: SW * 0.62,
     zIndex: 0,
-  },
-  glowCircle: {
-    width: '100%',
-    height: '100%',
-    borderRadius: SW * 0.28,
-    backgroundColor: colors.gold[600],
   },
 
   // Image
@@ -623,9 +660,13 @@ const styles = StyleSheet.create({
     top: CY - IMG_H / 2,
     width: IMG_W,
     height: IMG_H,
-    zIndex: 5,
+    zIndex: 1,
   },
   img: { width: IMG_W, height: IMG_H },
+  edgeFade: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
+  },
   imgTapHint: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',

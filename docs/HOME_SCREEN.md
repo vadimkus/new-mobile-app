@@ -43,21 +43,35 @@ Categories are fetched from API (`fetchCategories`) and dynamically rendered:
 ### ProductHeroCard
 
 Large featured card with:
-- Gradient background (category-specific colors)
+- **Near-black gradient background** — category-specific dark gradients (e.g., `#0D0818` → `#180812`)
 - Product image (supports local override)
 - Badge (e.g., "BESTSELLER")
 - Star rating
 - Price
 - Side action buttons: favorite + add to bag
 
+The dark gradients ensure cutout PNG images blend seamlessly.
+
 ### ProductMiniCard
 
 Compact grid card with:
+- **Pure black background** (`#000000`) — cutout images blend perfectly
 - Product image (supports local override)
 - Favorite button (top-right)
 - Product name (2 lines max)
 - Price
 - "Add" button (gold, triggers toast)
+
+## Image Blending
+
+Both card types use dark/black backgrounds for seamless transparent PNG integration:
+
+| Card Type | Background |
+|-----------|------------|
+| ProductMiniCard | `#000000` (pure black) |
+| ProductHeroCard | Near-black gradient with subtle color tint |
+
+This ensures cutout product images with transparent backgrounds appear to float naturally without visible edges.
 
 ## Local Image Overrides
 

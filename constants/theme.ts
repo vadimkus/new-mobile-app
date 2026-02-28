@@ -67,13 +67,13 @@ export const colors = {
 
   // Category accent colors (for gradients on discovery cards)
   category: {
-    serums: ['#2D1B4E', '#4A1528'] as const,
-    masks: ['#1B2E4E', '#15384A'] as const,
-    creams: ['#3E2D1B', '#4A3415'] as const,
-    peeling: ['#1B4E3E', '#154A2D'] as const,
-    sun: ['#4E451B', '#4A3815'] as const,
-    cleanser: ['#1B2D4E', '#15284A'] as const,
-    default: ['#2A1A3E', '#3E1A2A'] as const,
+    serums: ['#0D0818', '#180812'] as const,
+    masks: ['#081018', '#0A1418'] as const,
+    creams: ['#14100A', '#181208'] as const,
+    peeling: ['#081814', '#0A180D'] as const,
+    sun: ['#18150A', '#181208'] as const,
+    cleanser: ['#0A1018', '#081018'] as const,
+    default: ['#0E0A14', '#140A0E'] as const,
   },
 
   // Ingredient node colors

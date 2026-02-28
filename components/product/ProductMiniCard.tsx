@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     borderWidth: 1,
     borderColor: colors.glass.borderStrong,
-    backgroundColor: colors.bg.surface,
+    backgroundColor: '#000000',
     overflow: 'hidden',
   },
   inner: {
