@@ -1,19 +1,42 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { colors, typography, spacing, radius } from '../../../constants/theme';
+import { useAuth } from '../../../contexts/AuthContext';
+import { fetchUserOrders } from '../../../services/api';
 import GlassCard from '../../../components/ui/GlassCard';
 
-const DEMO_ORDERS = [
-  { id: '1042', date: 'Feb 25, 2026', status: 'Delivered', statusColor: colors.status.success, total: 534, items: 3 },
-  { id: '1038', date: 'Feb 18, 2026', status: 'Shipped', statusColor: '#5AC8FA', total: 289, items: 1 },
-  { id: '1035', date: 'Feb 10, 2026', status: 'Pending', statusColor: colors.status.warning, total: 430, items: 2 },
-];
+const STATUS_COLORS: Record<string, string> = {
+  delivered: colors.status.success,
+  shipped: '#5AC8FA',
+  paid: colors.status.success,
+  pending: colors.status.warning,
+  processing: '#5AC8FA',
+};
 
 export default function OrdersScreen() {
+  const { token } = useAuth();
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!token) { setLoading(false); return; }
+    (async () => {
+      try {
+        const data = await fetchUserOrders(token);
+        setOrders(data);
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load orders');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [token]);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.header}>
@@ -25,29 +48,48 @@ export default function OrdersScreen() {
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {DEMO_ORDERS.map((order, i) => (
-          <Animated.View key={order.id} entering={FadeInDown.duration(400).delay(i * 100)}>
-            <TouchableOpacity onPress={() => router.push(`/profile/orders/${order.id}`)} activeOpacity={0.8}>
-              <GlassCard>
-                <View style={styles.orderHeader}>
-                  <Text style={styles.orderId}>#{order.id}</Text>
-                  <View style={[styles.statusBadge, { backgroundColor: `${order.statusColor}20` }]}>
-                    <Text style={[styles.statusText, { color: order.statusColor }]}>{order.status}</Text>
+        {loading && (
+          <View style={styles.center}><ActivityIndicator size="large" color={colors.gold[500]} /></View>
+        )}
+
+        {!loading && error !== '' && (
+          <View style={styles.center}><Text style={styles.errorText}>{error}</Text></View>
+        )}
+
+        {!loading && orders.length === 0 && !error && (
+          <View style={styles.center}>
+            <Ionicons name="receipt-outline" size={48} color={colors.text.muted} />
+            <Text style={styles.emptyText}>No orders yet</Text>
+          </View>
+        )}
+
+        {orders.map((order, i) => {
+          const status = String(order.status || 'pending').toLowerCase();
+          const statusColor = STATUS_COLORS[status] || colors.text.secondary;
+          return (
+            <Animated.View key={order.id || order.orderNumber || i} entering={FadeInDown.duration(400).delay(i * 100)}>
+              <TouchableOpacity onPress={() => router.push(`/profile/orders/${order.id || order.orderNumber}`)} activeOpacity={0.8}>
+                <GlassCard>
+                  <View style={styles.orderHeader}>
+                    <Text style={styles.orderId}>#{order.orderNumber || order.id}</Text>
+                    <View style={[styles.statusBadge, { backgroundColor: `${statusColor}20` }]}>
+                      <Text style={[styles.statusText, { color: statusColor }]}>{order.status || 'Pending'}</Text>
+                    </View>
                   </View>
-                </View>
-                <View style={styles.orderDetails}>
-                  <Text style={styles.orderDate}>{order.date}</Text>
-                  <Text style={styles.orderDot}>·</Text>
-                  <Text style={styles.orderDate}>{order.items} items</Text>
-                </View>
-                <View style={styles.orderFooter}>
-                  <Text style={styles.orderTotal}>{order.total} AED</Text>
-                  <Ionicons name="chevron-forward" size={18} color={colors.text.muted} />
-                </View>
-              </GlassCard>
-            </TouchableOpacity>
-          </Animated.View>
-        ))}
+                  <View style={styles.orderDetails}>
+                    <Text style={styles.orderDate}>{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : ''}</Text>
+                    <Text style={styles.orderDot}>·</Text>
+                    <Text style={styles.orderDate}>{order.items?.length || 0} items</Text>
+                  </View>
+                  <View style={styles.orderFooter}>
+                    <Text style={styles.orderTotal}>{order.total || order.totalAmount || 0} AED</Text>
+                    <Ionicons name="chevron-forward" size={18} color={colors.text.muted} />
+                  </View>
+                </GlassCard>
+              </TouchableOpacity>
+            </Animated.View>
+          );
+        })}
         <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
@@ -61,6 +103,10 @@ const styles = StyleSheet.create({
   headerTitle: { ...typography.title3, letterSpacing: 0.5 },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 20, gap: spacing.md },
+
+  center: { alignItems: 'center', paddingVertical: 60, gap: spacing.md },
+  errorText: { ...typography.bodySmall, color: colors.status.error, textAlign: 'center' },
+  emptyText: { ...typography.headline, color: colors.text.secondary },
 
   orderHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm },
   orderId: { ...typography.headline },

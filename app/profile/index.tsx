@@ -9,8 +9,10 @@ import { colors, typography, spacing, radius } from '../../constants/theme';
 import GlassCard from '../../components/ui/GlassCard';
 import MenuRow from '../../components/ui/MenuRow';
 import SectionHeader from '../../components/ui/SectionHeader';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function ProfileScreen() {
+  const { user, logout } = useAuth();
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [emailNotifs, setEmailNotifs] = useState(true);
   const [pushNotifs, setPushNotifs] = useState(true);
@@ -32,15 +34,17 @@ export default function ProfileScreen() {
           <GlassCard intensity="medium" padding="xl">
             <View style={styles.avatarSection}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>V</Text>
+                <Text style={styles.avatarText}>{user?.name?.[0]?.toUpperCase() || 'G'}</Text>
                 <View style={styles.onlineDot} />
               </View>
               <View style={styles.userInfo}>
-                <Text style={styles.userName}>Vadim Kus</Text>
-                <Text style={styles.userEmail}>vadimkus@genosys.ae</Text>
+                <Text style={styles.userName}>{user?.name || 'Guest'}</Text>
+                <Text style={styles.userEmail}>{user?.email || 'Not signed in'}</Text>
+                {(user?.discount ?? 0) > 0 && (
                 <View style={styles.discountBadge}>
-                  <Text style={styles.discountText}>15% VIP Discount</Text>
+                  <Text style={styles.discountText}>{user!.discount}% VIP Discount</Text>
                 </View>
+                )}
               </View>
               <TouchableOpacity
                 onPress={() => router.push('/profile/edit')}
@@ -124,7 +128,7 @@ export default function ProfileScreen() {
               showChevron={false}
               onPress={() => {
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-                router.replace('/auth/login');
+                logout();
               }}
             />
           </GlassCard>

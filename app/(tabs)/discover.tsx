@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -13,21 +14,46 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { colors, typography, spacing, radius, layout } from '../../constants/theme';
 import { DEMO_PRODUCTS, CATEGORIES } from '../../constants/mockData';
+import { useAuth } from '../../contexts/AuthContext';
+import { fetchProducts, type Product } from '../../services/api';
 import ProductHeroCard from '../../components/product/ProductHeroCard';
 import ProductMiniCard from '../../components/product/ProductMiniCard';
 import CategoryIcon from '../../components/ui/CategoryIcon';
 import SectionHeader from '../../components/ui/SectionHeader';
 
 export default function DiscoverScreen() {
+  const { user, token } = useAuth();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [products, setProducts] = useState<any[]>(DEMO_PRODUCTS);
+  const [apiLoaded, setApiLoaded] = useState(false);
+  const [loadingApi, setLoadingApi] = useState(true);
 
-  const filteredProducts = DEMO_PRODUCTS.filter((p) => {
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const userCtx = user ? { id: user.id, token: token ?? undefined } : undefined;
+        const data = await fetchProducts(userCtx);
+        if (!cancelled && data.length > 0) {
+          setProducts(data);
+          setApiLoaded(true);
+        }
+      } catch {
+        // Keep demo data on failure
+      } finally {
+        if (!cancelled) setLoadingApi(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user, token]);
+
+  const filteredProducts = products.filter((p) => {
     if (activeCategory !== 'all') {
-      if (p.category.toLowerCase() !== activeCategory) return false;
+      if (p.category?.toLowerCase() !== activeCategory) return false;
     }
     if (searchQuery) {
-      return p.name.toLowerCase().includes(searchQuery.toLowerCase());
+      return p.name?.toLowerCase().includes(searchQuery.toLowerCase());
     }
     return true;
   });
@@ -38,6 +64,8 @@ export default function DiscoverScreen() {
   const handleProductPress = useCallback((id: string) => {
     router.push(`/product/${id}`);
   }, []);
+
+  const avatarInitial = user?.name?.[0]?.toUpperCase() || 'G';
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -58,7 +86,7 @@ export default function DiscoverScreen() {
           </View>
 
           <TouchableOpacity style={styles.avatarBtn} onPress={() => router.push('/profile')}>
-            <Text style={styles.avatarText}>V</Text>
+            <Text style={styles.avatarText}>{avatarInitial}</Text>
           </TouchableOpacity>
         </Animated.View>
 
@@ -97,6 +125,14 @@ export default function DiscoverScreen() {
           </ScrollView>
         </Animated.View>
 
+        {/* Loading indicator */}
+        {loadingApi && !apiLoaded && (
+          <View style={styles.loadingRow}>
+            <ActivityIndicator size="small" color={colors.gold[500]} />
+            <Text style={styles.loadingText}>Loading products...</Text>
+          </View>
+        )}
+
         {/* Hero Product */}
         {heroProduct && (
           <Animated.View
@@ -104,11 +140,11 @@ export default function DiscoverScreen() {
             style={styles.heroSection}
           >
             <ProductHeroCard
-              id={heroProduct.id}
+              id={String(heroProduct.id)}
               name={heroProduct.name}
-              tagline={heroProduct.tagline}
-              price={heroProduct.price}
-              imageUrl={heroProduct.imageUrl}
+              tagline={heroProduct.tagline || heroProduct.description?.slice(0, 60)}
+              price={heroProduct.salePrice ?? heroProduct.price}
+              imageUrl={heroProduct.imageUrl || heroProduct.images?.[0]}
               badge={heroProduct.badge}
               rating={heroProduct.rating}
               gradientColors={heroProduct.gradientColors}
@@ -124,14 +160,14 @@ export default function DiscoverScreen() {
             <View style={styles.grid}>
               {gridProducts.map((product, index) => (
                 <Animated.View
-                  key={product.id}
+                  key={String(product.id)}
                   entering={FadeInRight.duration(500).delay(500 + index * 100)}
                 >
                   <ProductMiniCard
-                    id={product.id}
+                    id={String(product.id)}
                     name={product.name}
-                    price={product.price}
-                    imageUrl={product.imageUrl}
+                    price={product.salePrice ?? product.price}
+                    imageUrl={product.imageUrl || product.images?.[0]}
                     onPress={handleProductPress}
                   />
                 </Animated.View>
@@ -140,7 +176,6 @@ export default function DiscoverScreen() {
           </Animated.View>
         )}
 
-        {/* Bottom spacer for tab bar */}
         <View style={{ height: layout.tabBarHeight + 20 }} />
       </ScrollView>
     </SafeAreaView>
@@ -148,93 +183,27 @@ export default function DiscoverScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.bg.primary,
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: layout.screenPadding,
-  },
+  safeArea: { flex: 1, backgroundColor: colors.bg.primary },
+  scroll: { flex: 1 },
+  scrollContent: { paddingHorizontal: layout.screenPadding },
 
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-  },
-  headerBtn: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerCenter: {
-    alignItems: 'center',
-  },
-  brandName: {
-    ...typography.title2,
-    letterSpacing: 4,
-    fontSize: 24,
-  },
-  brandTagline: {
-    ...typography.caption1,
-    color: colors.gold[500],
-    marginTop: 2,
-    letterSpacing: 0.5,
-  },
-  avatarBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderColor: colors.gold[500],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    ...typography.label,
-    color: colors.gold[500],
-    fontSize: 14,
-  },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.md },
+  headerBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  headerCenter: { alignItems: 'center' },
+  brandName: { ...typography.title2, letterSpacing: 4, fontSize: 24 },
+  brandTagline: { ...typography.caption1, color: colors.gold[500], marginTop: 2, letterSpacing: 0.5 },
+  avatarBtn: { width: 36, height: 36, borderRadius: 18, borderWidth: 1.5, borderColor: colors.gold[500], alignItems: 'center', justifyContent: 'center' },
+  avatarText: { ...typography.label, color: colors.gold[500], fontSize: 14 },
 
-  // Search
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.glass.light,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    marginBottom: spacing.xl,
-    borderWidth: 1,
-    borderColor: colors.glass.border,
-  },
-  searchInput: {
-    flex: 1,
-    ...typography.bodySmall,
-    color: colors.text.primary,
-    marginLeft: spacing.sm,
-    marginRight: spacing.sm,
-  },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.glass.light, borderRadius: radius.lg, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, marginBottom: spacing.xl, borderWidth: 1, borderColor: colors.glass.border },
+  searchInput: { flex: 1, ...typography.bodySmall, color: colors.text.primary, marginLeft: spacing.sm, marginRight: spacing.sm },
 
-  // Categories
-  categoriesScroll: {
-    paddingBottom: spacing.xl,
-  },
+  categoriesScroll: { paddingBottom: spacing.xl },
 
-  // Hero
-  heroSection: {
-    marginBottom: spacing.xxl,
-  },
+  loadingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, marginBottom: spacing.xl },
+  loadingText: { ...typography.caption1, color: colors.text.secondary },
 
-  // Grid
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: layout.cardGutter,
-  },
+  heroSection: { marginBottom: spacing.xxl },
+
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: layout.cardGutter },
 });

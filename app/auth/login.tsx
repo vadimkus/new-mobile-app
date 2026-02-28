@@ -23,6 +23,7 @@ import * as Haptics from 'expo-haptics';
 import { colors, typography, spacing, radius, shadows } from '../../constants/theme';
 import GoldButton from '../../components/ui/GoldButton';
 import GlassCard from '../../components/ui/GlassCard';
+import { useAuth } from '../../contexts/AuthContext';
 
 const UAE_EMIRATES = [
   'Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman',
@@ -32,6 +33,7 @@ const UAE_EMIRATES = [
 const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 export default function LoginScreen() {
+  const { loginWithEmail: authLogin, register: authRegister } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -84,15 +86,35 @@ export default function LoginScreen() {
     }
 
     setLoading(true);
-    // TODO: Connect to real API
-    setTimeout(() => {
-      setLoading(false);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      if (!isLogin) {
-        Alert.alert('Account Created', 'Your account has been created successfully!');
+    try {
+      let result;
+      if (isLogin) {
+        result = await authLogin(email, password);
+      } else {
+        result = await authRegister(name, email, password, {
+          phone: phone.trim(),
+          address: address.trim(),
+          emirate,
+          birthday: birthday.trim(),
+        });
       }
-      router.replace('/(tabs)/discover');
-    }, 1500);
+
+      if (result.success) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        if (!isLogin) {
+          Alert.alert('Account Created', 'Your account has been created successfully!');
+        }
+        router.replace('/(tabs)/discover');
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        Alert.alert('Error', result.error || (isLogin ? 'Login failed' : 'Registration failed'));
+      }
+    } catch (e: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert('Error', e?.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSocialLogin = (provider: string) => {
@@ -101,8 +123,7 @@ export default function LoginScreen() {
       Alert.alert('Privacy Policy', 'Please accept the Privacy Policy to continue');
       return;
     }
-    // TODO: Connect to real OAuth
-    Alert.alert('Coming Soon', `${provider} login will be connected in Phase 2`);
+    Alert.alert('Coming Soon', `${provider} login will be connected to real OAuth`);
   };
 
   const toggleMode = () => {
