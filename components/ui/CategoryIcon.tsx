@@ -50,7 +50,6 @@ export default function CategoryIcon({ label, icon, isActive, onPress }: Categor
           styles.label,
           isActive && styles.activeLabel,
         ]}
-        numberOfLines={1}
       >
         {label}
       </Text>
@@ -62,7 +61,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     marginRight: spacing.lg,
-    width: 64,
+    minWidth: 56,
   },
   iconCircle: {
     width: 52,

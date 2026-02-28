@@ -63,6 +63,22 @@ The orbital constellation component (see `PRODUCT_PAGE.md` for full details):
 />
 ```
 
+#### Orbit Sizing
+
+The orbit is dynamically sized to fit within the screen bounds:
+
+```typescript
+const PODIUM_W = SW - 40;           // 20px padding each side
+const CX = PODIUM_W / 2;            // Center X
+const PILL_HALF_W = 55;             // Half of average pill width (~110px)
+const ORB_RX = CX - PILL_HALF_W + 10;  // Horizontal radius
+const ORB_RY = SW * 0.34;           // Vertical radius
+```
+
+- Pills are sized `minWidth: 80`, `maxWidth: 120`
+- Left and right pills stay within screen bounds
+- Orbit radius scales with screen width
+
 ### ProductHeroCard
 
 Featured product card with gradient background:
@@ -129,10 +145,18 @@ Product reviews section:
 ### CategoryIcon
 
 ```typescript
-<CategoryIcon name="Serum" size={24} color={colors.gold[500]} />
+<CategoryIcon
+  label="Serum"
+  icon="flask-outline"
+  isActive={activeCategory === 'serum'}
+  onPress={() => setActiveCategory('serum')}
+/>
 ```
 
-Maps category names to Ionicons.
+- Circle icon button (52x52px) with label below
+- Dynamic width via `minWidth: 56` — grows for long labels like "Sun Protection"
+- Active state: gold border, 1.05 scale, glow shadow
+- Haptic feedback on tap
 
 ### ErrorBoundary
 

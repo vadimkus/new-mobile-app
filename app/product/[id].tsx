@@ -112,6 +112,9 @@ export default function ProductPodiumScreen() {
     ingredients: parseSafeArray((apiProduct as any).ingredients),
     howToUse: (apiProduct as any).howToUse || '',
     directions: (apiProduct as any).directions || '',
+    size: (apiProduct as any).size || '',
+    skinType: (apiProduct as any).skinType || '',
+    usage: (apiProduct as any).usage || '',
   } : null;
 
   const productId = id || '';
@@ -279,7 +282,36 @@ export default function ProductPodiumScreen() {
                 />
               </TouchableOpacity>
               {aboutOpen && (
-                <Text style={styles.descriptionText}>{product.description}</Text>
+                <>
+                  <Text style={styles.descriptionText}>{product.description}</Text>
+
+                  {/* Product specs */}
+                  {(product.size || product.skinType || product.usage) && (
+                    <View style={styles.specsGrid}>
+                      {product.size ? (
+                        <View style={styles.specItem}>
+                          <Ionicons name="resize-outline" size={14} color={colors.gold[500]} />
+                          <Text style={styles.specLabel}>Size</Text>
+                          <Text style={styles.specValue}>{product.size}</Text>
+                        </View>
+                      ) : null}
+                      {product.skinType ? (
+                        <View style={styles.specItem}>
+                          <Ionicons name="water-outline" size={14} color={colors.gold[500]} />
+                          <Text style={styles.specLabel}>Skin Type</Text>
+                          <Text style={styles.specValue}>{product.skinType}</Text>
+                        </View>
+                      ) : null}
+                      {product.usage ? (
+                        <View style={styles.specItem}>
+                          <Ionicons name="time-outline" size={14} color={colors.gold[500]} />
+                          <Text style={styles.specLabel}>Usage</Text>
+                          <Text style={styles.specValue}>{product.usage.replace(/-/g, ' ')}</Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  )}
+                </>
               )}
             </GlassCard>
           </Animated.View>
@@ -472,6 +504,35 @@ const styles = StyleSheet.create({
   expandHeader: { flexDirection: 'row', alignItems: 'center' },
   descriptionTitle: { ...typography.headline, flex: 1 },
   descriptionText: { ...typography.body, color: colors.text.secondary, lineHeight: 24, marginTop: spacing.sm },
+  specsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+    paddingTop: spacing.lg,
+    borderTopWidth: 0.5,
+    borderTopColor: colors.glass.border,
+  },
+  specItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(201, 169, 110, 0.06)',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: radius.pill,
+    gap: 6,
+  },
+  specLabel: {
+    ...typography.caption2,
+    color: colors.text.tertiary,
+    letterSpacing: 0.3,
+  },
+  specValue: {
+    ...typography.caption2,
+    color: colors.text.primary,
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
 
   applicationSection: { marginBottom: spacing.lg },
   appHeader: { flexDirection: 'row', alignItems: 'center' },

@@ -47,7 +47,8 @@ const CY = PODIUM_H * 0.38;
 const IMG_W = SW * 0.44;
 const IMG_H = SW * 0.54;
 
-const ORB_RX = SW * 0.42;
+const PILL_HALF_W = 55;
+const ORB_RX = CX - PILL_HALF_W + 10;
 const ORB_RY = SW * 0.34;
 
 const MAX_PILLS = 7;
@@ -144,7 +145,7 @@ function OrbitPill({
     const cosA = Math.cos(angle);
     const sinA = Math.sin(angle);
 
-    const x = CX + ORB_RX * sinA - 70;
+    const x = CX + ORB_RX * sinA - PILL_HALF_W;
     const y = CY + ORB_RY * cosA - 16;
 
     const depth = (cosA + 1) / 2;
@@ -157,7 +158,7 @@ function OrbitPill({
 
     return {
       position: 'absolute' as const,
-      left: isMe ? withSpring(CX - 70, SPRING_ORBIT) : x,
+      left: isMe ? withSpring(CX - PILL_HALF_W, SPRING_ORBIT) : x,
       top: isMe ? withSpring(CY + IMG_H / 2 + 20, SPRING_ORBIT) : y,
       opacity: withTiming(dimmed ? 0.15 : depthOpacity, { duration: 250 }),
       zIndex: isMe ? 50 : 10 + Math.round(depth * 20),
@@ -728,8 +729,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.07)',
-    minWidth: 100,
-    maxWidth: 150,
+    minWidth: 80,
+    maxWidth: 120,
   },
   pillEmoji: { fontSize: 12, marginRight: 5 },
   pillLabel: {

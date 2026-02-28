@@ -100,8 +100,23 @@ Three collapsible accordion sections: About, Application Method, and Customer Re
 ### About Section
 
 - **Collapsed**: Shows info-circle icon + "About" title + chevron-down
-- **Expanded**: Reveals product description text
+- **Expanded**: Reveals product description text + product specs grid
 - **Animation**: `LayoutAnimation` for smooth expand/collapse
+
+#### Product Specs Grid
+
+When expanded, the About section shows a specs row below the description:
+
+| Spec | Icon | API Field | Example |
+|------|------|-----------|---------|
+| **Size** | `resize-outline` | `size` | "15ml", "50ml" |
+| **Skin Type** | `water-outline` | `skinType` | "dry", "combination" |
+| **Usage** | `time-outline` | `usage` | "morning evening" |
+
+- Specs are displayed as pill-shaped tags with gold icons
+- Separated from description by a subtle divider
+- Only shown if at least one field has data
+- Each field is conditionally rendered (empty = hidden)
 
 ### Application Method Section
 

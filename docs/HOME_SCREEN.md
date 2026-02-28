@@ -38,6 +38,17 @@ Categories are fetched from API (`fetchCategories`) and dynamically rendered:
 - Combo categories (e.g., "Cream, Sun, Cushion BB") are split into primary categories
 - Icons mapped via `CATEGORY_ICON_MAP` in `api.ts`
 
+### CategoryIcon Component
+
+`components/ui/CategoryIcon.tsx` renders each category pill:
+
+- **Circle icon** — 52x52px with Ionicon, gold border when active
+- **Label text** — full category name displayed below icon
+- **Dynamic width** — `minWidth: 56` allows longer names to expand naturally
+- **No text truncation** — labels like "Sun Protection" show fully
+- **Active state** — gold border, scale 1.05, glow shadow
+- **Haptic feedback** — light impact on tap
+
 ## Product Cards
 
 ### ProductHeroCard
