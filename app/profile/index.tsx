@@ -66,7 +66,15 @@ export default function ProfileScreen() {
                 <View style={styles.onlineDot} />
               </View>
               <View style={styles.userInfo}>
-                <Text style={styles.userName}>{user?.name || 'Guest'}</Text>
+                <View style={styles.nameRow}>
+                  <Text style={styles.userName}>{user?.name || 'Guest'}</Text>
+                  {(user as any)?.memberTier && (user as any).memberTier !== 'MEMBER' && (
+                    <View style={styles.tierPill}>
+                      <Ionicons name="diamond" size={8} color={colors.gold[500]} />
+                      <Text style={styles.tierPillText}>{(user as any).memberTier}</Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={styles.userEmail}>{user?.email || 'Not signed in'}</Text>
                 {(user?.discount ?? 0) > 0 && (
                 <View style={styles.discountBadge}>
@@ -112,8 +120,31 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </Animated.View>
 
-        {/* Account & Settings */}
+        {/* Membership Card */}
         <Animated.View entering={FadeInDown.duration(500).delay(300)}>
+          <TouchableOpacity
+            style={styles.membershipBanner}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/profile/membership');
+            }}
+            activeOpacity={0.85}
+          >
+            <View style={styles.membershipLeft}>
+              <Ionicons name="diamond" size={18} color={colors.gold[500]} />
+              <View>
+                <Text style={styles.membershipLabel}>{t('membership.title')}</Text>
+                <Text style={styles.membershipTier}>
+                  {(user as any)?.memberNumber || ''}
+                </Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.text.tertiary} />
+          </TouchableOpacity>
+        </Animated.View>
+
+        {/* Account & Settings */}
+        <Animated.View entering={FadeInDown.duration(500).delay(350)}>
           <Text style={styles.sectionTitle}>{t('profile.accountSection')}</Text>
           <GlassCard padding="xs" noBorder>
             <MenuRow icon="person-outline" label={t('profile.personalInformation')} onPress={() => router.push('/profile/edit')} />
@@ -188,7 +219,10 @@ const styles = StyleSheet.create({
   avatarText: { ...typography.title2, color: colors.text.inverse, fontSize: 22 },
   onlineDot: { position: 'absolute', bottom: 2, right: 2, width: 12, height: 12, borderRadius: 6, backgroundColor: colors.status.success, borderWidth: 2, borderColor: colors.bg.surface },
   userInfo: { flex: 1 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   userName: { ...typography.headline, fontSize: 17 },
+  tierPill: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(201,169,110,0.12)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: radius.pill },
+  tierPillText: { fontSize: 9, fontWeight: '700', color: colors.gold[500], letterSpacing: 0.8 },
   userEmail: { ...typography.caption1, color: colors.text.secondary, marginTop: 2 },
   discountBadge: { alignSelf: 'flex-start', backgroundColor: 'rgba(201,169,110,0.15)', paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radius.pill, marginTop: spacing.xs },
   discountText: { ...typography.caption2, color: colors.gold[500], fontWeight: '700', fontSize: 10 },
@@ -199,6 +233,17 @@ const styles = StyleSheet.create({
   quickLabel: { ...typography.label, color: colors.text.primary, fontSize: 12 },
 
   sectionTitle: { ...typography.label, color: colors.text.secondary, marginTop: spacing.xxl, marginBottom: spacing.md, marginLeft: spacing.xs, letterSpacing: 0.5, textTransform: 'uppercase', fontSize: 11 },
+
+  membershipBanner: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: colors.bg.surface, borderRadius: radius.lg,
+    borderWidth: 1, borderColor: 'rgba(201,169,110,0.15)',
+    paddingHorizontal: spacing.lg, paddingVertical: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  membershipLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  membershipLabel: { ...typography.headline, fontSize: 14, color: colors.text.primary },
+  membershipTier: { ...typography.caption2, color: colors.gold[500], marginTop: 1, letterSpacing: 1.5, fontSize: 10 },
 
   signOutSection: { marginTop: spacing.xl },
   version: { ...typography.caption2, color: colors.text.muted, textAlign: 'center', marginTop: spacing.xxl },

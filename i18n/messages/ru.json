@@ -1639,5 +1639,30 @@
     "aiCameraScan": "ИИ сканирование камерой",
     "aiCameraScanDesc": "Сделайте селфи для мгновенного ИИ-анализа кожи и ритуала",
     "soon": "Скоро"
+  },
+  "membership": {
+    "title": "Карта участника",
+    "memberSince": "Участник с",
+    "memberNumber": "Номер участника",
+    "tier": "Уровень",
+    "tierMember": "Участник",
+    "tierSilver": "Серебро",
+    "tierGold": "Золото",
+    "tierPlatinum": "Платина",
+    "totalOrders": "Заказы",
+    "totalSpent": "Потрачено",
+    "loyaltyPoints": "Баллы",
+    "tierProgress": "Прогресс уровня",
+    "nextTier": "Следующий: {tier}",
+    "topTier": "Достигнут высший уровень",
+    "addToWallet": "Добавить в Apple Wallet",
+    "benefits": "Ваши преимущества",
+    "benefitDiscount": "{percent}% на все заказы",
+    "benefitEarlyAccess": "Ранний доступ к новинкам",
+    "benefitFreeShipping": "Бесплатная доставка",
+    "benefitPersonalConsultant": "Персональный консультант",
+    "benefitBirthdayGift": "Подарок на день рождения",
+    "benefitExclusiveProducts": "Эксклюзивные продукты",
+    "loginRequired": "Войдите, чтобы увидеть вашу карту участника"
   }
 }

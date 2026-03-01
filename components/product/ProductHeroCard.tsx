@@ -5,8 +5,6 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { colors, typography, radius, spacing, shadows, layout } from '../../constants/theme';
-import { useImageColors } from '../../hooks/useImageColors';
-
 interface ProductHeroCardProps {
   id: string;
   name: string;
@@ -40,10 +38,7 @@ export default function ProductHeroCard({
   onAddToBag,
   isFavorite = false,
 }: ProductHeroCardProps) {
-  const pc = useImageColors(imageUrl);
-  const dynamicGradient: readonly [string, string] = pc.isExtracted
-    ? pc.gradient
-    : gradientColors;
+  const dynamicGradient: readonly [string, string] = ['#000000', '#000000'];
 
   return (
     <TouchableOpacity

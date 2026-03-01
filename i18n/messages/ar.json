@@ -1639,5 +1639,30 @@
     "aiCameraScan": "مسح الكاميرا بالذكاء الاصطناعي",
     "aiCameraScanDesc": "التقط صورة سيلفي لتحليل فوري للبشرة بالذكاء الاصطناعي",
     "soon": "قريباً"
+  },
+  "membership": {
+    "title": "بطاقة العضوية",
+    "memberSince": "عضو منذ",
+    "memberNumber": "رقم العضوية",
+    "tier": "المستوى",
+    "tierMember": "عضو",
+    "tierSilver": "فضي",
+    "tierGold": "ذهبي",
+    "tierPlatinum": "بلاتيني",
+    "totalOrders": "الطلبات",
+    "totalSpent": "المصروفات",
+    "loyaltyPoints": "النقاط",
+    "tierProgress": "تقدم المستوى",
+    "nextTier": "التالي: {tier}",
+    "topTier": "تم الوصول لأعلى مستوى",
+    "addToWallet": "إضافة إلى Apple Wallet",
+    "benefits": "مزاياك",
+    "benefitDiscount": "{percent}% على جميع الطلبات",
+    "benefitEarlyAccess": "وصول مبكر للمنتجات الجديدة",
+    "benefitFreeShipping": "شحن مجاني",
+    "benefitPersonalConsultant": "مستشار تجميل شخصي",
+    "benefitBirthdayGift": "هدية عيد الميلاد",
+    "benefitExclusiveProducts": "منتجات حصرية",
+    "loginRequired": "يرجى تسجيل الدخول لعرض بطاقة العضوية"
   }
 }

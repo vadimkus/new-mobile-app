@@ -538,6 +538,40 @@ export const deleteReview = async (token: string, productId: string, reviewId: s
   }
 };
 
+// ─── Membership ──────────────────────────────────────────────────────────────
+
+export interface MembershipData {
+  memberNumber: string;
+  memberSince: string;
+  tier: 'MEMBER' | 'SILVER' | 'GOLD' | 'PLATINUM';
+  tierProgress: {
+    currentSpent: number;
+    nextTierAt: number;
+    nextTier: string | null;
+    progressPercent: number;
+  };
+  stats: {
+    totalOrders: number;
+    totalSpent: number;
+    loyaltyPoints: number;
+  };
+  user: {
+    name: string;
+    email: string;
+  };
+}
+
+export const fetchMembership = async (token: string): Promise<MembershipData | null> => {
+  try {
+    const res = await authenticatedFetch(`${API}/membership`, { method: 'GET' }, token);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || !body.success) return null;
+    return body as MembershipData;
+  } catch {
+    return null;
+  }
+};
+
 // ─── Wishlist (Server Sync) ──────────────────────────────────────────────────
 
 export const fetchWishlist = async (token: string): Promise<string[]> => {
@@ -584,6 +618,7 @@ export default {
   searchProducts,
   fetchTraining,
   fetchSkinRecommendations,
+  fetchMembership,
   loginWithEmail,
   registerUser,
   loginWithGoogle,

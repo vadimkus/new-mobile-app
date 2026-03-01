@@ -48,8 +48,8 @@ const CY = PODIUM_H * 0.38;
 const IMG_W = SW * 0.44;
 const IMG_H = SW * 0.54;
 
-const PILL_HALF_W = 55;
-const ORB_RX = CX - PILL_HALF_W + 10;
+const PILL_R = 36;
+const ORB_RX = CX - PILL_R + 10;
 const ORB_RY = SW * 0.34;
 
 const MAX_PILLS = 7;
@@ -74,15 +74,20 @@ interface BenefitData {
   emoji: string;
 }
 
+function firstWord(str: string): string {
+  const w = str.trim().split(/\s+/)[0] || str.trim();
+  return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+}
+
 function parseBenefit(raw: any, i: number): BenefitData {
   if (typeof raw === 'string') {
     const dash = raw.indexOf(' - ');
     const label = dash > 0 ? raw.slice(0, dash).trim() : raw.trim();
-    const detail = dash > 0 ? raw.slice(dash + 3).trim() : '';
-    return { short: label, detail, emoji: EMOJIS[i % EMOJIS.length] };
+    const detail = dash > 0 ? raw.slice(dash + 3).trim() : label;
+    return { short: firstWord(label), detail, emoji: EMOJIS[i % EMOJIS.length] };
   }
   return {
-    short: raw?.label || `Benefit ${i + 1}`,
+    short: firstWord(raw?.label || `Benefit ${i + 1}`),
     detail: raw?.description || '',
     emoji: raw?.emoji || EMOJIS[i % EMOJIS.length],
   };
@@ -146,8 +151,8 @@ function OrbitPill({
     const cosA = Math.cos(angle);
     const sinA = Math.sin(angle);
 
-    const x = CX + ORB_RX * sinA - PILL_HALF_W;
-    const y = CY + ORB_RY * cosA - 16;
+    const x = CX + ORB_RX * sinA - PILL_R;
+    const y = CY + ORB_RY * cosA - PILL_R;
 
     const depth = (cosA + 1) / 2;
     const depthScale = 0.75 + depth * 0.3;
@@ -159,7 +164,7 @@ function OrbitPill({
 
     return {
       position: 'absolute' as const,
-      left: isMe ? withSpring(CX - PILL_HALF_W, SPRING_ORBIT) : x,
+      left: isMe ? withSpring(CX - PILL_R, SPRING_ORBIT) : x,
       top: isMe ? withSpring(CY + IMG_H / 2 + 20, SPRING_ORBIT) : y,
       opacity: withTiming(dimmed ? 0.15 : depthOpacity, { duration: 250 }),
       zIndex: isMe ? 50 : 10 + Math.round(depth * 20),
@@ -221,13 +226,9 @@ function OrbitPill({
       <Animated.View style={[styles.pillAura, auraStyle]} pointerEvents="none" />
 
       <GestureDetector gesture={tap}>
-        <Animated.View style={[styles.pillTouch, borderStyle]}>
-          <BlurView intensity={Platform.OS === 'ios' ? 20 : 35} tint="dark" style={styles.pillBlur}>
-            <View style={styles.pillInner}>
-              <Text style={styles.pillEmoji}>{benefit.emoji}</Text>
-              <Text style={styles.pillLabel} numberOfLines={1}>{benefit.short}</Text>
-            </View>
-          </BlurView>
+        <Animated.View style={[styles.pillCircle, borderStyle]}>
+          <Text style={styles.pillEmoji}>{benefit.emoji}</Text>
+          <Text style={styles.pillLabel} numberOfLines={1}>{benefit.short}</Text>
         </Animated.View>
       </GestureDetector>
     </Animated.View>
@@ -707,43 +708,36 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 
-  // Pill aura
+  // Circle aura glow
   pillAura: {
     position: 'absolute',
-    width: 160,
-    height: 44,
-    borderRadius: 22,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
     backgroundColor: GOLD_GLOW,
-    top: -5,
-    left: -10,
+    top: -9,
+    left: -9,
     zIndex: -1,
   },
 
-  // Pill
-  pillTouch: {
-    borderRadius: radius.pill,
-    overflow: 'hidden',
-  },
-  pillBlur: {
-    borderRadius: radius.pill,
-    overflow: 'hidden',
-  },
-  pillInner: {
-    flexDirection: 'row',
+  // Dark circle pill
+  pillCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(10, 10, 10, 0.85)',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.07)',
-    minWidth: 80,
-    maxWidth: 120,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
-  pillEmoji: { fontSize: 12, marginRight: 5 },
+  pillEmoji: { fontSize: 16, marginBottom: 2 },
   pillLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: colors.text.primary,
-    letterSpacing: 0.2,
-    flex: 1,
+    fontSize: 9,
+    fontWeight: '700',
+    color: 'rgba(255, 255, 255, 0.45)',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase' as const,
   },
 
   // Swipe hint

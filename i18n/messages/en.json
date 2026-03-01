@@ -1639,5 +1639,30 @@
     "aiCameraScan": "AI Camera Scan",
     "aiCameraScanDesc": "Take a selfie for instant AI-powered skin analysis and routine",
     "soon": "Soon"
+  },
+  "membership": {
+    "title": "Membership Card",
+    "memberSince": "Member since",
+    "memberNumber": "Member No.",
+    "tier": "Tier",
+    "tierMember": "Member",
+    "tierSilver": "Silver",
+    "tierGold": "Gold",
+    "tierPlatinum": "Platinum",
+    "totalOrders": "Orders",
+    "totalSpent": "Spent",
+    "loyaltyPoints": "Points",
+    "tierProgress": "Tier Progress",
+    "nextTier": "Next: {tier}",
+    "topTier": "Highest tier reached",
+    "addToWallet": "Add to Apple Wallet",
+    "benefits": "Your Benefits",
+    "benefitDiscount": "{percent}% on all orders",
+    "benefitEarlyAccess": "Early access to new products",
+    "benefitFreeShipping": "Free shipping",
+    "benefitPersonalConsultant": "Personal beauty consultant",
+    "benefitBirthdayGift": "Birthday gift",
+    "benefitExclusiveProducts": "Exclusive products",
+    "loginRequired": "Please sign in to view your membership card"
   }
 }
