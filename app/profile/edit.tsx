@@ -7,11 +7,13 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { colors, typography, spacing, radius } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLocalization } from '../../contexts/LocalizationContext';
 import { updateUserProfile, deleteAccount } from '../../services/api';
 import GoldButton from '../../components/ui/GoldButton';
 
 export default function EditProfileScreen() {
   const { user, token, logout, refreshProfile } = useAuth();
+  const { t } = useLocalization();
 
   const nameParts = (user?.name || '').split(' ');
   const [firstName, setFirstName] = useState(nameParts[0] || '');
@@ -38,13 +40,13 @@ export default function EditProfileScreen() {
       if (result.success) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         await refreshProfile();
-        Alert.alert('Saved', 'Your profile has been updated');
+        Alert.alert(t('alerts.saved'), t('alerts.profileUpdated'));
         router.back();
       } else {
-        Alert.alert('Error', result.error || 'Failed to update profile');
+        Alert.alert(t('alerts.error'), result.error || t('alerts.failedToUpdateProfile'));
       }
     } catch (e: any) {
-      Alert.alert('Error', e?.message || 'Something went wrong');
+      Alert.alert(t('alerts.error'), e?.message || t('alerts.somethingWentWrong'));
     } finally {
       setSaving(false);
     }
@@ -52,25 +54,25 @@ export default function EditProfileScreen() {
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      'Delete Account',
-      'Are you sure? This action cannot be undone. All your data will be permanently removed.',
+      t('profile.deleteAccount'),
+      t('profile.deleteAccountConfirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('addressesPage.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             if (!token) return;
             try {
               const result = await deleteAccount(token);
               if (result.success) {
-                Alert.alert('Account Deleted', 'Your account has been removed.');
+                Alert.alert(t('alerts.accountDeleted'), t('alerts.accountRemoved'));
                 await logout();
               } else {
-                Alert.alert('Error', result.error || 'Failed to delete account');
+                Alert.alert(t('alerts.error'), result.error || t('alerts.failedToDeleteAccount'));
               }
             } catch (e: any) {
-              Alert.alert('Error', e?.message || 'Something went wrong');
+              Alert.alert(t('alerts.error'), e?.message || t('alerts.somethingWentWrong'));
             }
           },
         },
@@ -86,12 +88,12 @@ export default function EditProfileScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.text.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Profile</Text>
+        <Text style={styles.headerTitle}>{t('profile.editProfile')}</Text>
         <TouchableOpacity onPress={handleSave} style={styles.navBtn} disabled={saving}>
           {saving ? (
             <ActivityIndicator size="small" color={colors.gold[500]} />
           ) : (
-            <Text style={styles.saveText}>Save</Text>
+            <Text style={styles.saveText}>{t('common.save')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -104,7 +106,7 @@ export default function EditProfileScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(150)}>
-          <Text style={styles.sectionLabel}>Personal Information</Text>
+          <Text style={styles.sectionLabel}>{t('profile.personalInformation')}</Text>
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>First Name *</Text>
             <TextInput style={styles.input} value={firstName} onChangeText={setFirstName} placeholderTextColor={colors.text.muted} selectionColor={colors.gold[500]} />
@@ -122,24 +124,24 @@ export default function EditProfileScreen() {
             <TextInput style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholder="+971 XX XXX XXXX" placeholderTextColor={colors.text.muted} selectionColor={colors.gold[500]} />
           </View>
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Delivery Address</Text>
-            <TextInput style={styles.input} value={address} onChangeText={setAddress} placeholder="Street, building, apartment" placeholderTextColor={colors.text.muted} selectionColor={colors.gold[500]} />
+            <Text style={styles.inputLabel}>{t('checkout.deliveryAddress')}</Text>
+            <TextInput style={styles.input} value={address} onChangeText={setAddress} placeholder={t('placeholders.streetBuildingApartment')} placeholderTextColor={colors.text.muted} selectionColor={colors.gold[500]} />
           </View>
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Emirate</Text>
-            <TextInput style={styles.input} value={emirate} onChangeText={setEmirate} placeholder="Dubai" placeholderTextColor={colors.text.muted} selectionColor={colors.gold[500]} />
+            <Text style={styles.inputLabel}>{t('placeholders.emirate')}</Text>
+            <TextInput style={styles.input} value={emirate} onChangeText={setEmirate} placeholder={t('placeholders.dubai')} placeholderTextColor={colors.text.muted} selectionColor={colors.gold[500]} />
           </View>
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Date of Birth</Text>
-            <TextInput style={styles.input} value={birthday} onChangeText={setBirthday} placeholder="DD/MM/YYYY" placeholderTextColor={colors.text.muted} keyboardType="numbers-and-punctuation" selectionColor={colors.gold[500]} />
+            <Text style={styles.inputLabel}>{t('profile.dateOfBirth')}</Text>
+            <TextInput style={styles.input} value={birthday} onChangeText={setBirthday} placeholder={t('placeholders.dateFormat')} placeholderTextColor={colors.text.muted} keyboardType="numbers-and-punctuation" selectionColor={colors.gold[500]} />
           </View>
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(300)} style={styles.dangerZone}>
-          <Text style={styles.sectionLabel}>Danger Zone</Text>
+          <Text style={styles.sectionLabel}>{t('profile.dangerZone')}</Text>
           <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteAccount}>
             <Ionicons name="trash-outline" size={18} color={colors.status.error} />
-            <Text style={styles.deleteText}>Delete Account</Text>
+            <Text style={styles.deleteText}>{t('profile.deleteAccount')}</Text>
           </TouchableOpacity>
         </Animated.View>
 

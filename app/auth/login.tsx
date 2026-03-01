@@ -29,6 +29,7 @@ import AUTH_CONFIG from '../../config/auth';
 import GoldButton from '../../components/ui/GoldButton';
 import GlassCard from '../../components/ui/GlassCard';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLocalization } from '../../contexts/LocalizationContext';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -41,6 +42,7 @@ const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 
 export default function LoginScreen() {
   const { loginWithEmail: authLogin, register: authRegister, loginWithGoogleToken: authLoginGoogle, loginWithAppleToken: authLoginApple } = useAuth();
+  const { t } = useLocalization();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -73,24 +75,24 @@ export default function LoginScreen() {
     try {
       const result = await authenticateWithBiometrics();
       if (result.success && result.credentials) {
-        if (result.credentials.token) {
-          router.replace('/(tabs)/discover');
-        } else if (result.credentials.email && result.credentials.password) {
-          const loginResult = await authLogin(result.credentials.email, result.credentials.password);
-          if (loginResult.success) {
+          if (result.credentials.token) {
             router.replace('/(tabs)/discover');
-          } else {
-            Alert.alert('Error', loginResult.error || 'Login failed');
+          } else if (result.credentials.email && result.credentials.password) {
+            const loginResult = await authLogin(result.credentials.email, result.credentials.password);
+            if (loginResult.success) {
+              router.replace('/(tabs)/discover');
+            } else {
+              Alert.alert(t('alerts.error'), loginResult.error || t('alerts.loginFailed'));
+            }
+          }
+        } else {
+          if (result.error && result.error !== 'Cancelled') {
+            Alert.alert(t('alerts.error'), result.error);
           }
         }
-      } else {
-        if (result.error && result.error !== 'Cancelled') {
-          Alert.alert('Error', result.error);
-        }
-      }
-    } catch {
-      Alert.alert('Error', 'Biometric login failed');
-    } finally {
+      } catch {
+        Alert.alert(t('alerts.error'), t('alerts.biometricLoginFailed'));
+      } finally {
       setLoading(false);
     }
   };
@@ -99,37 +101,37 @@ export default function LoginScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     if (!email || !password || (!isLogin && !name)) {
-      Alert.alert('Error', 'Please fill in all required fields');
+      Alert.alert(t('alerts.error'), t('alerts.fillAllRequiredFields'));
       return;
     }
 
     if (!isValidEmail(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      Alert.alert(t('alerts.error'), t('alerts.enterValidEmail'));
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      Alert.alert(t('alerts.error'), t('alerts.passwordMinLength'));
       return;
     }
 
     if (!isLogin) {
       if (!phone.trim()) {
-        Alert.alert('Error', 'Phone number is required');
+        Alert.alert(t('alerts.error'), t('alerts.phoneNumberRequired'));
         return;
       }
       if (!address.trim()) {
-        Alert.alert('Error', 'Delivery address is required');
+        Alert.alert(t('alerts.error'), t('alerts.deliveryAddressRequired'));
         return;
       }
       if (!emirate) {
-        Alert.alert('Error', 'Please select your emirate');
+        Alert.alert(t('alerts.error'), t('alerts.selectYourEmirate'));
         return;
       }
     }
 
     if (!privacyConsent) {
-      Alert.alert('Privacy Policy', 'Please accept the Privacy Policy to continue');
+      Alert.alert(t('privacyPage.privacyPolicy'), t('alerts.acceptPrivacyPolicy'));
       return;
     }
 
@@ -150,16 +152,16 @@ export default function LoginScreen() {
       if (result.success) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         if (!isLogin) {
-          Alert.alert('Account Created', 'Your account has been created successfully!');
+          Alert.alert(t('alerts.accountCreated'), t('alerts.accountCreatedSuccess'));
         }
         router.replace('/(tabs)/discover');
       } else {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        Alert.alert('Error', result.error || (isLogin ? 'Login failed' : 'Registration failed'));
+        Alert.alert(t('alerts.error'), result.error || (isLogin ? t('alerts.loginFailed') : t('alerts.registrationFailed')));
       }
     } catch (e: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert('Error', e?.message || 'Something went wrong');
+      Alert.alert(t('alerts.error'), e?.message || t('alerts.somethingWentWrong'));
     } finally {
       setLoading(false);
     }
@@ -188,10 +190,10 @@ export default function LoginScreen() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         router.replace('/(tabs)/discover');
       } else {
-        Alert.alert('Error', result.error || 'Google login failed');
+        Alert.alert(t('alerts.error'), result.error || t('alerts.googleLoginFailed'));
       }
     } catch (e: any) {
-      Alert.alert('Error', e?.message || 'Google login failed');
+      Alert.alert(t('alerts.error'), e?.message || t('alerts.googleLoginFailed'));
     } finally {
       setLoading(false);
     }
@@ -200,7 +202,7 @@ export default function LoginScreen() {
   const handleGoogleLogin = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (!privacyConsent) {
-      Alert.alert('Privacy Policy', 'Please accept the Privacy Policy to continue');
+      Alert.alert(t('privacyPage.privacyPolicy'), t('alerts.acceptPrivacyPolicy'));
       return;
     }
     googlePromptAsync();
@@ -209,7 +211,7 @@ export default function LoginScreen() {
   const handleAppleLogin = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (!privacyConsent) {
-      Alert.alert('Privacy Policy', 'Please accept the Privacy Policy to continue');
+      Alert.alert(t('privacyPage.privacyPolicy'), t('alerts.acceptPrivacyPolicy'));
       return;
     }
     try {
@@ -228,13 +230,13 @@ export default function LoginScreen() {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           router.replace('/(tabs)/discover');
         } else {
-          Alert.alert('Error', result.error || 'Apple login failed');
+          Alert.alert(t('alerts.error'), result.error || t('alerts.appleLoginFailed'));
         }
         setLoading(false);
       }
     } catch (e: any) {
       if (e?.code !== 'ERR_REQUEST_CANCELED') {
-        Alert.alert('Error', e?.message || 'Apple login failed');
+        Alert.alert(t('alerts.error'), e?.message || t('alerts.appleLoginFailed'));
       }
     }
   };
@@ -321,10 +323,10 @@ export default function LoginScreen() {
           <Animated.View entering={FadeInDown.duration(600).delay(350)}>
             {!isLogin && (
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Full Name</Text>
+                <Text style={styles.inputLabel}>{t('placeholders.fullName')}</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Your name"
+                  placeholder={t('placeholders.yourName')}
                   placeholderTextColor={colors.text.muted}
                   value={name}
                   onChangeText={setName}
@@ -394,11 +396,11 @@ export default function LoginScreen() {
 
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>
-                    Delivery Address <Text style={styles.required}>*</Text>
+                    {t('checkout.deliveryAddress')} <Text style={styles.required}>*</Text>
                   </Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="Street, building, apartment"
+                    placeholder={t('placeholders.streetBuildingApartment')}
                     placeholderTextColor={colors.text.muted}
                     value={address}
                     onChangeText={setAddress}
@@ -424,17 +426,17 @@ export default function LoginScreen() {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Birthday</Text>
+                  <Text style={styles.inputLabel}>{t('profile.birthday')}</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="DD/MM/YYYY"
+                    placeholder={t('placeholders.dateFormat')}
                     placeholderTextColor={colors.text.muted}
                     value={birthday}
                     onChangeText={setBirthday}
                     keyboardType="numbers-and-punctuation"
                     selectionColor={colors.gold[500]}
                   />
-                  <Text style={styles.birthdayHint}>Optional — we'll send you a special gift!</Text>
+                  <Text style={styles.birthdayHint}>{t('auth.birthdayHint')}</Text>
                 </View>
               </>
             )}
@@ -456,10 +458,10 @@ export default function LoginScreen() {
                 )}
               </View>
               <Text style={styles.privacyText}>
-                I agree to the{' '}
-                <Text style={styles.privacyLink}>Privacy Policy</Text>
-                {' '}and{' '}
-                <Text style={styles.privacyLink}>Terms of Service</Text>
+                {t('auth.agreeToTerms')}{' '}
+                <Text style={styles.privacyLink}>{t('privacyPage.privacyPolicy')}</Text>
+                {' '}{t('common.and')}{' '}
+                <Text style={styles.privacyLink}>{t('profile.termsAndConditions')}</Text>
               </Text>
             </TouchableOpacity>
           </Animated.View>
@@ -537,7 +539,7 @@ export default function LoginScreen() {
       >
         <Pressable style={styles.modalOverlay} onPress={() => setShowEmiratePicker(false)}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Emirate</Text>
+            <Text style={styles.modalTitle}>{t('checkout.selectEmirate')}</Text>
             {UAE_EMIRATES.map((em) => (
               <TouchableOpacity
                 key={em}

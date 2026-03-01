@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { colors, typography, spacing, radius } from '../../constants/theme';
+import { useLocalization } from '../../contexts/LocalizationContext';
 import GlassCard from '../../components/ui/GlassCard';
 
 const FAQ = [
@@ -18,36 +19,37 @@ const FAQ = [
 ];
 
 export default function HelpScreen() {
+  const { t } = useLocalization();
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}><Ionicons name="arrow-back" size={22} color={colors.text.primary} /></TouchableOpacity>
-        <Text style={styles.headerTitle}>Help & Support</Text>
+        <Text style={styles.headerTitle}>{t('profile.helpAndSupport')}</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeInDown.duration(500)}>
-          <Text style={styles.sectionLabel}>Contact Support</Text>
+          <Text style={styles.sectionLabel}>{t('helpPage.contactSupport')}</Text>
           <View style={styles.supportRow}>
             <TouchableOpacity style={styles.supportCard} onPress={() => Linking.openURL('mailto:info@genosys.ae')}>
               <Ionicons name="mail-outline" size={22} color={colors.gold[500]} />
-              <Text style={styles.supportLabel}>Email</Text>
+              <Text style={styles.supportLabel}>{t('helpPage.email')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.supportCard} onPress={() => Linking.openURL('tel:+971501234567')}>
               <Ionicons name="call-outline" size={22} color={colors.gold[500]} />
-              <Text style={styles.supportLabel}>Phone</Text>
+              <Text style={styles.supportLabel}>{t('helpPage.phone')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.supportCard} onPress={() => Linking.openURL('https://wa.me/971501234567')}>
               <Ionicons name="logo-whatsapp" size={22} color="#25D366" />
-              <Text style={styles.supportLabel}>WhatsApp</Text>
+              <Text style={styles.supportLabel}>{t('helpPage.whatsApp')}</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(150)}>
-          <Text style={styles.sectionLabel}>Frequently Asked Questions</Text>
+          <Text style={styles.sectionLabel}>{t('helpPage.faq')}</Text>
           {FAQ.map((faq, i) => (
             <TouchableOpacity
               key={i}
@@ -65,7 +67,7 @@ export default function HelpScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(300)}>
-          <Text style={styles.sectionLabel}>Business Hours</Text>
+          <Text style={styles.sectionLabel}>{t('helpPage.businessHours')}</Text>
           <GlassCard>
             <Text style={styles.hoursText}>Sunday - Thursday: 9:00 AM - 6:00 PM</Text>
             <Text style={styles.hoursText}>Friday - Saturday: Closed</Text>

@@ -214,6 +214,18 @@
     "viewOrder": "View Order",
     "continueShopping": "Continue Shopping",
     "orderSummary": "Order Summary",
+    "fullName": "Full Name",
+    "phone": "Phone",
+    "address": "Address",
+    "selectEmirate": "Select Emirate",
+    "payWhenOrderArrives": "Pay when your order arrives",
+    "creditDebitCard": "Credit/Debit Card",
+    "orderPlaced": "Order Placed!",
+    "orderPlacedMessage": "Your order has been placed successfully.",
+    "payOnDelivery": "Pay on delivery.",
+    "viewOrders": "View Orders",
+    "shipping": "Shipping",
+    "free": "FREE",
     "promotion": "Promotion",
     "totals": "Totals",
     "subtotal": "Subtotal",
@@ -612,6 +624,12 @@
     "emailNotifications": "Email Notifications",
     "accountTitle": "Account",
     "accountSection": "Account",
+    "editProfile": "Edit Profile",
+    "dateOfBirth": "Date of Birth",
+    "birthday": "Birthday",
+    "dangerZone": "Danger Zone",
+    "deleteAccount": "Delete Account",
+    "deleteAccountConfirm": "Are you sure? This action cannot be undone. All your data will be permanently removed.",
     "familyMember": "Family Member",
     "discountLabel": "Discount",
     "memberSince": "Since {year}",
@@ -1450,6 +1468,7 @@
     "free": "FREE",
     "size": "Size",
     "color": "Color",
+    "and": "and",
     "continueShopping": "Continue Shopping",
     "opening": "Opening…",
     "error": "Error",
@@ -1528,7 +1547,10 @@
     "professional": "Professional Grade"
   },
   "auth": {
-    "loginRequired": "Login required"
+    "loginRequired": "Login required",
+    "signIn": "Sign In",
+    "agreeToTerms": "I agree to the",
+    "birthdayHint": "Optional — we'll send you a special gift!"
   },
   "skinCamera": {
     "grantPermission": "Grant Permission",
@@ -1679,6 +1701,11 @@
   },
   "alerts": {
     "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info",
+    "cancel": "Cancel",
+    "delete": "Delete",
     "fillAddressAndPhone": "Please fill in address and phone",
     "deleteAddress": "Delete Address",
     "removeThisAddress": "Remove this address?",
@@ -1756,20 +1783,25 @@
     "ingredientDna": "Ingredient DNA",
     "formula": "Formula",
     "keyActive": "Key Active",
-    "efficacyRating": "Efficacy Rating"
+    "efficacyRating": "Efficacy Rating",
+    "ingredientDataNotAvailable": "Ingredient data not available"
   },
   "aboutPage": {
     "aboutGenosys": "About GENOSYS",
     "genosys": "GENOSYS",
     "aboutUs": "About Us",
+    "aboutUsText": "GENOSYS is a professional cosmetics brand from South Korea, specializing in professional-grade skincare solutions. Our products combine cutting-edge dermatological science with natural ingredients to deliver visible results for all skin types.",
     "ourMission": "Our Mission",
+    "ourMissionText": "Our mission is to empower skincare professionals and beauty enthusiasts with innovative, science-backed products that deliver real, visible results while maintaining the highest standards of safety and efficacy.",
     "companyInformation": "Company Information"
   },
   "paymentPage": {
     "defaultPaymentMethod": "Default Payment Method",
     "cashOnDelivery": "Cash on Delivery",
     "payWhenReceive": "Pay when you receive your order",
-    "paySecurelyWithStripe": "Pay securely with Stripe"
+    "paySecurelyWithStripe": "Pay securely with Stripe",
+    "creditDebitCard": "Credit / Debit Card",
+    "payWithStripe": "Pay securely with Stripe"
   },
   "ritual": {
     "ritualCompleteTitle": "Ritual Complete! 🎉",

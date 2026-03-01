@@ -11,6 +11,7 @@ import * as Haptics from 'expo-haptics';
 import { colors, typography, spacing, radius } from '../constants/theme';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { useLocalization } from '../contexts/LocalizationContext';
 import { createOrder, fetchShippingRates, type ShippingRates } from '../services/api';
 import GlassCard from '../components/ui/GlassCard';
 import GoldButton from '../components/ui/GoldButton';
@@ -20,6 +21,7 @@ const UAE_EMIRATES = ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah'
 export default function CheckoutScreen() {
   const { user, token } = useAuth();
   const { items, subtotal, clearCart } = useCart();
+  const { t } = useLocalization();
   const [shippingRates, setShippingRates] = useState<ShippingRates | null>(null);
 
   const [name, setName] = useState(user?.name || '');
@@ -51,13 +53,13 @@ export default function CheckoutScreen() {
 
   const handlePlaceOrder = async () => {
     if (!name.trim() || !phone.trim() || !address.trim()) {
-      Alert.alert('Missing Info', 'Please fill in all shipping details');
+      Alert.alert(t('alerts.missingInfo'), t('alerts.fillShippingDetails'));
       return;
     }
     if (!token) {
-      Alert.alert('Sign In Required', 'Please sign in to place an order', [
-        { text: 'Cancel' },
-        { text: 'Sign In', onPress: () => router.push('/auth/login') },
+      Alert.alert(t('alerts.signInRequired'), t('alerts.signInToPlaceOrder'), [
+        { text: t('addressesPage.cancel') },
+        { text: t('auth.signIn'), onPress: () => router.push('/auth/login') },
       ]);
       return;
     }
@@ -88,15 +90,15 @@ export default function CheckoutScreen() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         clearCart();
         Alert.alert(
-          'Order Placed!',
-          `Your order has been placed successfully.${paymentMethod === 'cod' ? ' Pay on delivery.' : ''}`,
-          [{ text: 'View Orders', onPress: () => router.replace('/profile/orders') }],
+          t('checkout.orderPlaced'),
+          `${t('checkout.orderPlacedMessage')}${paymentMethod === 'cod' ? ` ${t('checkout.payOnDelivery')}` : ''}`,
+          [{ text: t('checkout.viewOrders'), onPress: () => router.replace('/profile/orders') }],
         );
       } else {
-        Alert.alert('Error', result.error || 'Failed to place order');
+        Alert.alert(t('alerts.error'), result.error || t('alerts.failedToPlaceOrder'));
       }
     } catch (e: any) {
-      Alert.alert('Error', e?.message || 'Something went wrong');
+      Alert.alert(t('alerts.error'), e?.message || t('alerts.somethingWentWrong'));
     } finally {
       setSubmitting(false);
     }
@@ -114,7 +116,7 @@ export default function CheckoutScreen() {
         </View>
         <View style={styles.emptyState}>
           <Ionicons name="bag-outline" size={48} color={colors.text.muted} />
-          <Text style={styles.emptyText}>Your bag is empty</Text>
+          <Text style={styles.emptyText}>{t('bag.emptyTitle')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -133,7 +135,7 @@ export default function CheckoutScreen() {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* Order Summary */}
         <Animated.View entering={FadeInDown.duration(500)}>
-          <Text style={styles.sectionTitle}>Order Summary</Text>
+          <Text style={styles.sectionTitle}>{t('checkout.orderSummary')}</Text>
           <GlassCard>
             {items.map((item) => (
               <View key={`${item.id}_${item.variant || ''}`} style={styles.itemRow}>
@@ -146,22 +148,22 @@ export default function CheckoutScreen() {
 
         {/* Shipping Address */}
         <Animated.View entering={FadeInDown.duration(500).delay(100)}>
-          <Text style={styles.sectionTitle}>Shipping Address</Text>
+          <Text style={styles.sectionTitle}>{t('checkout.shippingAddress')}</Text>
           <GlassCard>
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Full Name *</Text>
-              <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Your name" placeholderTextColor={colors.text.muted} selectionColor={colors.gold[500]} />
+              <Text style={styles.inputLabel}>{t('checkout.fullName')} *</Text>
+              <TextInput style={styles.input} value={name} onChangeText={setName} placeholder={t('placeholders.yourName')} placeholderTextColor={colors.text.muted} selectionColor={colors.gold[500]} />
             </View>
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Phone *</Text>
+              <Text style={styles.inputLabel}>{t('checkout.phone')} *</Text>
               <TextInput style={styles.input} value={phone} onChangeText={setPhone} placeholder="+971 XX XXX XXXX" placeholderTextColor={colors.text.muted} keyboardType="phone-pad" selectionColor={colors.gold[500]} />
             </View>
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Address *</Text>
-              <TextInput style={styles.input} value={address} onChangeText={setAddress} placeholder="Street, building, apartment" placeholderTextColor={colors.text.muted} selectionColor={colors.gold[500]} />
+              <Text style={styles.inputLabel}>{t('checkout.address')} *</Text>
+              <TextInput style={styles.input} value={address} onChangeText={setAddress} placeholder={t('placeholders.streetBuildingApartment')} placeholderTextColor={colors.text.muted} selectionColor={colors.gold[500]} />
             </View>
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Emirate</Text>
+              <Text style={styles.inputLabel}>{t('placeholders.emirate')}</Text>
               <TouchableOpacity style={styles.selectButton} onPress={() => setShowEmiratePicker(true)}>
                 <Text style={styles.selectText}>{emirate}</Text>
                 <Ionicons name="chevron-down" size={18} color={colors.text.secondary} />
@@ -172,13 +174,13 @@ export default function CheckoutScreen() {
 
         {/* Payment Method */}
         <Animated.View entering={FadeInDown.duration(500).delay(200)}>
-          <Text style={styles.sectionTitle}>Payment Method</Text>
+          <Text style={styles.sectionTitle}>{t('checkout.paymentMethod')}</Text>
           <GlassCard>
             <TouchableOpacity style={styles.paymentOption} onPress={() => { Haptics.selectionAsync(); setPaymentMethod('cod'); }}>
               <Ionicons name={paymentMethod === 'cod' ? 'radio-button-on' : 'radio-button-off'} size={22} color={paymentMethod === 'cod' ? colors.gold[500] : colors.text.muted} />
               <View style={styles.paymentInfo}>
-                <Text style={styles.paymentLabel}>Cash on Delivery</Text>
-                <Text style={styles.paymentDesc}>Pay when your order arrives</Text>
+                <Text style={styles.paymentLabel}>{t('paymentPage.cashOnDelivery')}</Text>
+                <Text style={styles.paymentDesc}>{t('checkout.payWhenOrderArrives')}</Text>
               </View>
               <Ionicons name="cash-outline" size={20} color={colors.text.secondary} />
             </TouchableOpacity>
@@ -186,7 +188,7 @@ export default function CheckoutScreen() {
             <TouchableOpacity style={styles.paymentOption} onPress={() => { Haptics.selectionAsync(); setPaymentMethod('card'); }}>
               <Ionicons name={paymentMethod === 'card' ? 'radio-button-on' : 'radio-button-off'} size={22} color={paymentMethod === 'card' ? colors.gold[500] : colors.text.muted} />
               <View style={styles.paymentInfo}>
-                <Text style={styles.paymentLabel}>Credit/Debit Card</Text>
+                <Text style={styles.paymentLabel}>{t('checkout.creditDebitCard')}</Text>
                 <Text style={styles.paymentDesc}>Visa, Mastercard, AMEX</Text>
               </View>
               <Ionicons name="card-outline" size={20} color={colors.text.secondary} />
@@ -196,13 +198,13 @@ export default function CheckoutScreen() {
 
         {/* Promo Code */}
         <Animated.View entering={FadeInDown.duration(500).delay(300)}>
-          <Text style={styles.sectionTitle}>Promo Code</Text>
+          <Text style={styles.sectionTitle}>{t('checkout.promoCode')}</Text>
           <View style={styles.promoRow}>
             <TextInput
               style={[styles.input, { flex: 1 }]}
               value={promoCode}
               onChangeText={setPromoCode}
-              placeholder="Enter promo code"
+              placeholder={t('placeholders.enterPromoCode')}
               placeholderTextColor={colors.text.muted}
               autoCapitalize="characters"
               selectionColor={colors.gold[500]}
@@ -212,13 +214,13 @@ export default function CheckoutScreen() {
 
         {/* Notes */}
         <Animated.View entering={FadeInDown.duration(500).delay(350)} style={styles.notesSection}>
-          <Text style={styles.sectionTitle}>Order Notes</Text>
+          <Text style={styles.sectionTitle}>{t('checkout.orderNotes')}</Text>
           <GlassCard>
             <TextInput
               style={[styles.notesInner]}
               value={notes}
               onChangeText={setNotes}
-              placeholder="Any special instructions..."
+              placeholder={t('placeholders.anySpecialInstructions')}
               placeholderTextColor={colors.text.muted}
               multiline
               numberOfLines={3}
@@ -231,28 +233,28 @@ export default function CheckoutScreen() {
         <Animated.View entering={FadeInDown.duration(500).delay(400)}>
           <GlassCard intensity="medium">
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Subtotal</Text>
+              <Text style={styles.summaryLabel}>{t('checkout.subtotal')}</Text>
               <Text style={styles.summaryValue}>{Number(subtotal).toFixed(2)} AED</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Shipping ({emirate})</Text>
+              <Text style={styles.summaryLabel}>{t('checkout.shipping')} ({emirate})</Text>
               <Text style={[styles.summaryValue, shippingCost === 0 && { color: colors.status.success }]}>
-                {shippingCost === 0 ? 'FREE' : `${Number(shippingCost).toFixed(2)} AED`}
+                {shippingCost === 0 ? t('checkout.free') : `${Number(shippingCost).toFixed(2)} AED`}
               </Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.summaryRow}>
-              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalLabel}>{t('checkout.total')}</Text>
               <Text style={styles.totalValue}>{Number(total).toFixed(2)} AED</Text>
             </View>
-            <Text style={styles.vatNote}>VAT included ({Math.round(vatRate * 100)}%)</Text>
+            <Text style={styles.vatNote}>{t('productPage.vatIncluded')} ({Math.round(vatRate * 100)}%)</Text>
           </GlassCard>
         </Animated.View>
 
         {/* Place Order */}
         <Animated.View entering={FadeInDown.duration(500).delay(500)} style={{ marginTop: spacing.xl }}>
           <GoldButton
-            title={submitting ? '' : 'Place Order'}
+            title={submitting ? '' : t('checkout.placeOrder')}
             onPress={handlePlaceOrder}
             fullWidth
             size="lg"
@@ -268,7 +270,7 @@ export default function CheckoutScreen() {
       <Modal visible={showEmiratePicker} transparent animationType="fade" onRequestClose={() => setShowEmiratePicker(false)}>
         <Pressable style={styles.modalOverlay} onPress={() => setShowEmiratePicker(false)}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Emirate</Text>
+            <Text style={styles.modalTitle}>{t('checkout.selectEmirate')}</Text>
             {UAE_EMIRATES.map((em) => (
               <TouchableOpacity
                 key={em}

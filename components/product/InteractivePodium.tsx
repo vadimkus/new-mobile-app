@@ -140,6 +140,7 @@ function OrbitPill({
   total,
   orbitAngle,
   selectedIdx,
+  jsSelected,
   onTap,
 }: {
   benefit: BenefitData;
@@ -147,6 +148,7 @@ function OrbitPill({
   total: number;
   orbitAngle: Animated.SharedValue<number>;
   selectedIdx: Animated.SharedValue<number>;
+  jsSelected: boolean;
   onTap: (i: number) => void;
 }) {
   const baseAngle = (Math.PI * 2 * index) / Math.max(total, 1);
@@ -225,29 +227,21 @@ function OrbitPill({
     runOnJS(onTap)(index);
   });
 
-  const [isSelected, setIsSelected] = useState(false);
   const marqueeX = useSharedValue(0);
-  const [textW, setTextW] = useState(0);
 
   const containerW = 60;
-  const needsScroll = textW > containerW;
+  const charW = 6.5;
+  const estTextW = benefit.label.length * charW + benefit.label.length * 0.8;
+  const travel = Math.max(0, estTextW - containerW + 6);
+  const needsScroll = travel > 0;
 
   useEffect(() => {
-    const checkSelected = () => {
-      setIsSelected(selectedIdx.value === index);
-    };
-    const id = setInterval(checkSelected, 200);
-    return () => clearInterval(id);
-  }, [selectedIdx, index]);
-
-  useEffect(() => {
-    if (isSelected && needsScroll) {
-      const travel = textW - containerW + 8;
+    if (jsSelected && needsScroll) {
       marqueeX.value = 0;
       marqueeX.value = withRepeat(
         withSequence(
-          withDelay(600, withTiming(-travel, { duration: travel * 40, easing: Easing.linear })),
-          withDelay(800, withTiming(0, { duration: travel * 40, easing: Easing.linear })),
+          withDelay(600, withTiming(-travel, { duration: Math.max(travel * 50, 800), easing: Easing.linear })),
+          withDelay(800, withTiming(0, { duration: Math.max(travel * 50, 800), easing: Easing.linear })),
         ),
         -1,
       );
@@ -255,7 +249,7 @@ function OrbitPill({
       cancelAnimation(marqueeX);
       marqueeX.value = withTiming(0, { duration: 200 });
     }
-  }, [isSelected, needsScroll, textW]);
+  }, [jsSelected]);
 
   const marqueeStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: marqueeX.value }],
@@ -272,16 +266,9 @@ function OrbitPill({
             <LuxuryIcon name={benefit.iconName} size={20} color="rgba(201, 169, 110, 0.7)" weight="duotone" />
           </View>
           <View style={styles.pillLabelWrap}>
-            <Animated.View style={marqueeStyle}>
-              <Text
-                style={styles.pillLabel}
-                numberOfLines={1}
-                onLayout={(e) => {
-                  const w = e.nativeEvent.layout.width;
-                  if (w > 0 && w !== textW) setTextW(w);
-                }}
-              >
-                {isSelected ? benefit.label : benefit.short}
+            <Animated.View style={[styles.pillLabelSlider, marqueeStyle]}>
+              <Text style={styles.pillLabel} numberOfLines={1}>
+                {jsSelected ? benefit.label : benefit.short}
               </Text>
             </Animated.View>
           </View>
@@ -678,6 +665,7 @@ export default function InteractivePodium({ imageSource, imageUri, benefits }: P
               total={pills.length}
               orbitAngle={orbitAngle}
               selectedIdx={selectedIdx}
+              jsSelected={jsSelectedIdx === i}
               onTap={handlePillTap}
             />
           ))}
@@ -793,7 +781,13 @@ const styles = StyleSheet.create({
   pillLabelWrap: {
     width: 60,
     overflow: 'hidden' as const,
-    alignItems: 'center' as const,
+    alignItems: 'flex-start' as const,
+    justifyContent: 'center' as const,
+  },
+  pillLabelSlider: {
+    flexDirection: 'row' as const,
+    flexShrink: 0,
+    paddingLeft: 4,
   },
   pillLabel: {
     fontSize: 9,

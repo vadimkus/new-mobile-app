@@ -10,6 +10,7 @@ import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, typography, spacing, radius, layout } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLocalization } from '../../contexts/LocalizationContext';
 import { fetchProducts, type Product } from '../../services/api';
 
 interface RitualStepType {
@@ -62,6 +63,7 @@ type TimeOfDay = 'morning' | 'evening';
 
 export default function RitualScreen() {
   const { user, token } = useAuth();
+  const { t } = useLocalization();
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>('morning');
   const [steps, setSteps] = useState<RitualStepType[]>([]);
   const [streak, setStreak] = useState(0);
@@ -136,7 +138,7 @@ export default function RitualScreen() {
       return reset;
     });
 
-    Alert.alert('Ritual Complete! 🎉', `${newStreak} day streak! Your skin will thank you.`);
+    Alert.alert(t('ritual.ritualCompleteTitle'), t('ritual.ritualCompleteMessage', { streak: newStreak }));
   }, [streak, lastDate]);
 
   const handleAddProduct = () => {

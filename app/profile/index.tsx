@@ -34,7 +34,7 @@ export default function ProfileScreen() {
   const handleBiometricToggle = useCallback(async (value: boolean) => {
     if (value) {
       if (!user?.email || !token) {
-        Alert.alert('Login Required', 'Please log in to enable biometric authentication.');
+        Alert.alert(t('alerts.loginRequired'), t('alerts.loginForBiometric'));
         return;
       }
       const result = await enableBiometricAuth({ email: user.email, token });
@@ -43,7 +43,7 @@ export default function ProfileScreen() {
       await disableBiometricAuth();
       setBiometricEnabled(false);
     }
-  }, [user, token]);
+  }, [user, token, t]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>

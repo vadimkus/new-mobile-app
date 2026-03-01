@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { colors, typography, spacing, radius } from '../../constants/theme';
+import { useLocalization } from '../../contexts/LocalizationContext';
 import GlassCard from '../../components/ui/GlassCard';
 
 const INFO_ROWS = [
@@ -19,11 +20,12 @@ const INFO_ROWS = [
 ];
 
 export default function AboutScreen() {
+  const { t } = useLocalization();
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}><Ionicons name="arrow-back" size={22} color={colors.text.primary} /></TouchableOpacity>
-        <Text style={styles.headerTitle}>About GENOSYS</Text>
+        <Text style={styles.headerTitle}>{t('aboutPage.aboutGenosys')}</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -34,21 +36,21 @@ export default function AboutScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(150)}>
-          <Text style={styles.sectionLabel}>About Us</Text>
+          <Text style={styles.sectionLabel}>{t('aboutPage.aboutUs')}</Text>
           <GlassCard>
-            <Text style={styles.bodyText}>GENOSYS is a premium Korean professional skincare brand, bringing cutting-edge dermatological science and K-beauty innovation to the UAE market.</Text>
+            <Text style={styles.bodyText}>{t('aboutPage.aboutUsText')}</Text>
           </GlassCard>
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(250)}>
-          <Text style={styles.sectionLabel}>Our Mission</Text>
+          <Text style={styles.sectionLabel}>{t('aboutPage.ourMission')}</Text>
           <GlassCard>
-            <Text style={styles.bodyText}>To provide accessible, professional-grade skincare solutions backed by clinical research and Korean beauty innovation, tailored for the UAE climate and diverse skin types.</Text>
+            <Text style={styles.bodyText}>{t('aboutPage.ourMissionText')}</Text>
           </GlassCard>
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(500).delay(350)}>
-          <Text style={styles.sectionLabel}>Company Information</Text>
+          <Text style={styles.sectionLabel}>{t('aboutPage.companyInformation')}</Text>
           <GlassCard>
             {INFO_ROWS.map((row, i) => (
               <View key={row.label} style={[styles.infoRow, i > 0 && styles.infoBorder]}>

@@ -214,6 +214,18 @@
     "viewOrder": "عرض الطلب",
     "continueShopping": "متابعة التسوق",
     "orderSummary": "ملخص الطلب",
+    "fullName": "الاسم الكامل",
+    "phone": "الهاتف",
+    "address": "العنوان",
+    "selectEmirate": "اختر الإمارة",
+    "payWhenOrderArrives": "الدفع عند استلام الطلب",
+    "creditDebitCard": "بطاقة ائتمان/خصم",
+    "orderPlaced": "تم تقديم الطلب!",
+    "orderPlacedMessage": "تم تقديم طلبك بنجاح.",
+    "payOnDelivery": "الدفع عند التسليم.",
+    "viewOrders": "عرض الطلبات",
+    "shipping": "الشحن",
+    "free": "مجاني",
     "promotion": "العروض",
     "totals": "الإجماليات",
     "subtotal": "المجموع الفرعي",
@@ -612,6 +624,12 @@
     "emailNotifications": "إشعارات البريد الإلكتروني",
     "accountTitle": "الحساب",
     "accountSection": "الحساب",
+    "editProfile": "تعديل الملف الشخصي",
+    "dateOfBirth": "تاريخ الميلاد",
+    "birthday": "عيد الميلاد",
+    "dangerZone": "منطقة الخطر",
+    "deleteAccount": "حذف الحساب",
+    "deleteAccountConfirm": "هل أنت متأكد؟ لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع بياناتك نهائياً.",
     "familyMember": "عضو العائلة",
     "discountLabel": "الخصم",
     "memberSince": "منذ {year}",
@@ -1450,6 +1468,7 @@
     "free": "مجاني",
     "size": "الحجم",
     "color": "اللون",
+    "and": "و",
     "continueShopping": "متابعة التسوق",
     "opening": "جارٍ الفتح…",
     "error": "خطأ",
@@ -1528,7 +1547,10 @@
     "professional": "درجة احترافية"
   },
   "auth": {
-    "loginRequired": "تسجيل الدخول مطلوب"
+    "loginRequired": "تسجيل الدخول مطلوب",
+    "signIn": "تسجيل الدخول",
+    "agreeToTerms": "أوافق على",
+    "birthdayHint": "اختياري — سنرسل لك هدية خاصة!"
   },
   "skinCamera": {
     "grantPermission": "منح الإذن",
@@ -1679,6 +1701,11 @@
   },
   "alerts": {
     "error": "خطأ",
+    "success": "نجاح",
+    "warning": "تحذير",
+    "info": "معلومات",
+    "cancel": "إلغاء",
+    "delete": "حذف",
     "fillAddressAndPhone": "يرجى ملء العنوان ورقم الهاتف",
     "deleteAddress": "حذف العنوان",
     "removeThisAddress": "هل تريد إزالة هذا العنوان؟",
@@ -1756,20 +1783,25 @@
     "ingredientDna": "الحمض النووي للمكونات",
     "formula": "التركيبة",
     "keyActive": "المكون الفعال الرئيسي",
-    "efficacyRating": "تقييم الفعالية"
+    "efficacyRating": "تقييم الفعالية",
+    "ingredientDataNotAvailable": "بيانات المكونات غير متاحة"
   },
   "aboutPage": {
     "aboutGenosys": "عن جينوسيس",
     "genosys": "جينوسيس",
     "aboutUs": "من نحن",
+    "aboutUsText": "جينوسيس هي علامة تجارية احترافية للعناية بالبشرة من كوريا الجنوبية، متخصصة في حلول العناية بالبشرة الاحترافية. تجمع منتجاتنا بين أحدث علوم الأمراض الجلدية والمكونات الطبيعية لتقديم نتائج ملموسة لجميع أنواع البشرة.",
     "ourMission": "مهمتنا",
+    "ourMissionText": "مهمتنا هي تمكين محترفي العناية بالبشرة وعشاق الجمال بمنتجات مبتكرة مدعومة علمياً تقدم نتائج حقيقية وملموسة مع الحفاظ على أعلى معايير السلامة والفعالية.",
     "companyInformation": "معلومات الشركة"
   },
   "paymentPage": {
     "defaultPaymentMethod": "طريقة الدفع الافتراضية",
     "cashOnDelivery": "الدفع عند الاستلام",
     "payWhenReceive": "ادفع عند استلام طلبك",
-    "paySecurelyWithStripe": "ادفع بأمان عبر Stripe"
+    "paySecurelyWithStripe": "ادفع بأمان عبر Stripe",
+    "creditDebitCard": "بطاقة ائتمان / خصم",
+    "payWithStripe": "ادفع بأمان عبر Stripe"
   },
   "ritual": {
     "ritualCompleteTitle": "اكتمل الروتين! 🎉",

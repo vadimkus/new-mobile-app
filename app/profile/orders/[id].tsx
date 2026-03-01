@@ -9,6 +9,7 @@ import * as Haptics from 'expo-haptics';
 import { colors, typography, spacing, radius } from '../../../constants/theme';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useCart } from '../../../contexts/CartContext';
+import { useLocalization } from '../../../contexts/LocalizationContext';
 import { fetchUserOrderById } from '../../../services/api';
 import GlassCard from '../../../components/ui/GlassCard';
 import GoldButton from '../../../components/ui/GoldButton';
@@ -26,6 +27,7 @@ export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { token } = useAuth();
   const { addItem } = useCart();
+  const { t } = useLocalization();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -57,7 +59,7 @@ export default function OrderDetailScreen() {
         variant: item.variant,
       }, item.quantity || 1);
     });
-    Alert.alert('Added to Bag', 'All items from this order have been added to your bag.');
+    Alert.alert(t('alerts.addedToBag'), t('alerts.itemsAddedFromOrder'));
     router.push('/(tabs)/bag');
   };
 

@@ -214,6 +214,18 @@
     "viewOrder": "Просмотреть заказ",
     "continueShopping": "Продолжить покупки",
     "orderSummary": "Состав заказа",
+    "fullName": "Полное имя",
+    "phone": "Телефон",
+    "address": "Адрес",
+    "selectEmirate": "Выберите эмират",
+    "payWhenOrderArrives": "Оплата при получении заказа",
+    "creditDebitCard": "Кредитная/дебетовая карта",
+    "orderPlaced": "Заказ оформлен!",
+    "orderPlacedMessage": "Ваш заказ успешно оформлен.",
+    "payOnDelivery": "Оплата при доставке.",
+    "viewOrders": "Посмотреть заказы",
+    "shipping": "Доставка",
+    "free": "БЕСПЛАТНО",
     "promotion": "Промо",
     "totals": "Итого",
     "subtotal": "Подытог",
@@ -612,6 +624,12 @@
     "emailNotifications": "Уведомления по Email",
     "accountTitle": "Аккаунт",
     "accountSection": "Аккаунт",
+    "editProfile": "Редактировать профиль",
+    "dateOfBirth": "Дата рождения",
+    "birthday": "День рождения",
+    "dangerZone": "Опасная зона",
+    "deleteAccount": "Удалить аккаунт",
+    "deleteAccountConfirm": "Вы уверены? Это действие нельзя отменить. Все ваши данные будут удалены безвозвратно.",
     "familyMember": "Участник семьи",
     "discountLabel": "Скидка",
     "memberSince": "С {year} года",
@@ -1450,6 +1468,7 @@
     "free": "БЕСПЛАТНО",
     "size": "Размер",
     "color": "Цвет",
+    "and": "и",
     "continueShopping": "Продолжить покупки",
     "opening": "Открытие…",
     "error": "Ошибка",
@@ -1528,7 +1547,10 @@
     "professional": "Профессиональный уровень"
   },
   "auth": {
-    "loginRequired": "Требуется вход"
+    "loginRequired": "Требуется вход",
+    "signIn": "Войти",
+    "agreeToTerms": "Я соглашаюсь с",
+    "birthdayHint": "Необязательно — мы пришлём вам особый подарок!"
   },
   "skinCamera": {
     "grantPermission": "Разрешить доступ",
@@ -1679,6 +1701,11 @@
   },
   "alerts": {
     "error": "Ошибка",
+    "success": "Успешно",
+    "warning": "Предупреждение",
+    "info": "Информация",
+    "cancel": "Отмена",
+    "delete": "Удалить",
     "fillAddressAndPhone": "Заполните адрес и телефон",
     "deleteAddress": "Удалить адрес",
     "removeThisAddress": "Удалить этот адрес?",
@@ -1756,20 +1783,25 @@
     "ingredientDna": "ДНК ингредиентов",
     "formula": "Формула",
     "keyActive": "Активный компонент",
-    "efficacyRating": "Рейтинг эффективности"
+    "efficacyRating": "Рейтинг эффективности",
+    "ingredientDataNotAvailable": "Данные об ингредиентах недоступны"
   },
   "aboutPage": {
     "aboutGenosys": "О GENOSYS",
     "genosys": "GENOSYS",
     "aboutUs": "О нас",
+    "aboutUsText": "GENOSYS — профессиональная косметическая марка из Южной Кореи, специализирующаяся на профессиональных средствах по уходу за кожей. Наша продукция сочетает передовые дерматологические разработки с натуральными ингредиентами для достижения видимых результатов для всех типов кожи.",
     "ourMission": "Наша миссия",
+    "ourMissionText": "Наша миссия — обеспечить специалистов по уходу за кожей и любителей красоты инновационными, научно обоснованными продуктами, которые дают реальные, видимые результаты при соблюдении высочайших стандартов безопасности и эффективности.",
     "companyInformation": "Информация о компании"
   },
   "paymentPage": {
     "defaultPaymentMethod": "Способ оплаты по умолчанию",
     "cashOnDelivery": "Оплата при доставке",
     "payWhenReceive": "Оплата при получении заказа",
-    "paySecurelyWithStripe": "Безопасная оплата через Stripe"
+    "paySecurelyWithStripe": "Безопасная оплата через Stripe",
+    "creditDebitCard": "Кредитная / дебетовая карта",
+    "payWithStripe": "Безопасная оплата через Stripe"
   },
   "ritual": {
     "ritualCompleteTitle": "Ритуал завершён! 🎉",

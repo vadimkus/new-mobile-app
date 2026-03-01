@@ -6,35 +6,37 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { colors, typography, spacing, radius } from '../../constants/theme';
+import { useLocalization } from '../../contexts/LocalizationContext';
 import GlassCard from '../../components/ui/GlassCard';
 import MenuRow from '../../components/ui/MenuRow';
 
 export default function PaymentScreen() {
+  const { t } = useLocalization();
   const [method, setMethod] = useState<'cod' | 'card'>('cod');
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}><Ionicons name="arrow-back" size={22} color={colors.text.primary} /></TouchableOpacity>
-        <Text style={styles.headerTitle}>Payment & Billing</Text>
+        <Text style={styles.headerTitle}>{t('profile.paymentAndBilling')}</Text>
         <View style={{ width: 40 }} />
       </View>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Animated.View entering={FadeInDown.duration(500)}>
-          <Text style={styles.sectionLabel}>Default Payment Method</Text>
+          <Text style={styles.sectionLabel}>{t('paymentPage.defaultPaymentMethod')}</Text>
           <GlassCard>
             <TouchableOpacity style={styles.methodRow} onPress={() => { Haptics.selectionAsync(); setMethod('cod'); }}>
               <View style={[styles.radio, method === 'cod' && styles.radioActive]} />
               <View style={styles.methodInfo}>
-                <Text style={styles.methodTitle}>Cash on Delivery</Text>
-                <Text style={styles.methodSub}>Pay when you receive your order</Text>
+                <Text style={styles.methodTitle}>{t('paymentPage.cashOnDelivery')}</Text>
+                <Text style={styles.methodSub}>{t('paymentPage.payWhenReceive')}</Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.methodRow, { borderTopWidth: 1, borderTopColor: colors.glass.border }]} onPress={() => { Haptics.selectionAsync(); setMethod('card'); }}>
               <View style={[styles.radio, method === 'card' && styles.radioActive]} />
               <View style={styles.methodInfo}>
-                <Text style={styles.methodTitle}>Credit / Debit Card</Text>
-                <Text style={styles.methodSub}>Pay securely with Stripe</Text>
+                <Text style={styles.methodTitle}>{t('paymentPage.creditDebitCard')}</Text>
+                <Text style={styles.methodSub}>{t('paymentPage.payWithStripe')}</Text>
               </View>
             </TouchableOpacity>
           </GlassCard>

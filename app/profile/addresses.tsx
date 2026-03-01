@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, typography, spacing, radius } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLocalization } from '../../contexts/LocalizationContext';
 import GlassCard from '../../components/ui/GlassCard';
 import GoldButton from '../../components/ui/GoldButton';
 
@@ -26,6 +27,7 @@ interface Address {
 
 export default function AddressesScreen() {
   const { user } = useAuth();
+  const { t } = useLocalization();
   const [addresses, setAddresses] = useState<Address[]>(() => {
     const defaultAddr: Address = {
       id: '1',
@@ -69,7 +71,7 @@ export default function AddressesScreen() {
 
   const saveAddress = () => {
     if (!formAddress.trim() || !formPhone.trim()) {
-      Alert.alert('Error', 'Please fill in address and phone');
+      Alert.alert(t('alerts.error'), t('alerts.fillAddressAndPhone'));
       return;
     }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -93,10 +95,10 @@ export default function AddressesScreen() {
   };
 
   const deleteAddress = (addrId: string) => {
-    Alert.alert('Delete Address', 'Remove this address?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('alerts.deleteAddress'), t('alerts.removeThisAddress'), [
+      { text: t('addressesPage.cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: () => setAddresses((prev) => prev.filter((a) => a.id !== addrId)),
       },
@@ -114,7 +116,7 @@ export default function AddressesScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.text.primary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Addresses</Text>
+        <Text style={styles.headerTitle}>{t('addressesPage.addresses')}</Text>
         <TouchableOpacity style={styles.navBtn} onPress={openAddForm}>
           <Ionicons name="add" size={24} color={colors.gold[500]} />
         </TouchableOpacity>
@@ -124,8 +126,8 @@ export default function AddressesScreen() {
         {addresses.length === 0 && (
           <View style={styles.emptyState}>
             <Ionicons name="location-outline" size={48} color={colors.text.muted} />
-            <Text style={styles.emptyText}>No addresses yet</Text>
-            <Text style={styles.emptySubtext}>Add your delivery address to get started</Text>
+            <Text style={styles.emptyText}>{t('addressesPage.noAddressesYet')}</Text>
+            <Text style={styles.emptySubtext}>{t('addressesPage.addDeliveryAddress')}</Text>
           </View>
         )}
 
@@ -137,13 +139,13 @@ export default function AddressesScreen() {
                   <Ionicons name={addr.type === 'Home' ? 'home-outline' : 'business-outline'} size={16} color={colors.gold[500]} />
                   <Text style={styles.typeLabel}>{addr.type}</Text>
                   {addr.isDefault && (
-                    <View style={styles.defaultBadge}><Text style={styles.defaultText}>Default</Text></View>
+                    <View style={styles.defaultBadge}><Text style={styles.defaultText}>{t('addressesPage.default')}</Text></View>
                   )}
                 </View>
                 <View style={styles.addrActions}>
                   {!addr.isDefault && (
                     <TouchableOpacity onPress={() => setDefault(addr.id)} hitSlop={8}>
-                      <Text style={styles.setDefaultText}>Set Default</Text>
+                      <Text style={styles.setDefaultText}>{t('addressesPage.setDefault')}</Text>
                     </TouchableOpacity>
                   )}
                   <TouchableOpacity onPress={() => openEditForm(addr)} hitSlop={8}>
@@ -186,16 +188,16 @@ export default function AddressesScreen() {
               ))}
             </View>
 
-            <TextInput style={styles.formInput} placeholder="Full Name" placeholderTextColor={colors.text.muted} value={formName} onChangeText={setFormName} selectionColor={colors.gold[500]} />
-            <TextInput style={styles.formInput} placeholder="Address *" placeholderTextColor={colors.text.muted} value={formAddress} onChangeText={setFormAddress} selectionColor={colors.gold[500]} />
-            <TextInput style={styles.formInput} placeholder="Emirate" placeholderTextColor={colors.text.muted} value={formEmirate} onChangeText={setFormEmirate} selectionColor={colors.gold[500]} />
-            <TextInput style={styles.formInput} placeholder="Phone *" placeholderTextColor={colors.text.muted} value={formPhone} onChangeText={setFormPhone} keyboardType="phone-pad" selectionColor={colors.gold[500]} />
+            <TextInput style={styles.formInput} placeholder={t('placeholders.fullName')} placeholderTextColor={colors.text.muted} value={formName} onChangeText={setFormName} selectionColor={colors.gold[500]} />
+            <TextInput style={styles.formInput} placeholder={t('placeholders.addressRequired')} placeholderTextColor={colors.text.muted} value={formAddress} onChangeText={setFormAddress} selectionColor={colors.gold[500]} />
+            <TextInput style={styles.formInput} placeholder={t('placeholders.emirate')} placeholderTextColor={colors.text.muted} value={formEmirate} onChangeText={setFormEmirate} selectionColor={colors.gold[500]} />
+            <TextInput style={styles.formInput} placeholder={t('placeholders.phoneRequired')} placeholderTextColor={colors.text.muted} value={formPhone} onChangeText={setFormPhone} keyboardType="phone-pad" selectionColor={colors.gold[500]} />
 
             <View style={styles.formButtons}>
               <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowForm(false)}>
-                <Text style={styles.cancelText}>Cancel</Text>
+                <Text style={styles.cancelText}>{t('addressesPage.cancel')}</Text>
               </TouchableOpacity>
-              <GoldButton title="Save" onPress={saveAddress} size="sm" style={{ flex: 1 }} />
+              <GoldButton title={t('common.save')} onPress={saveAddress} size="sm" style={{ flex: 1 }} />
             </View>
           </Pressable>
         </Pressable>

@@ -39,6 +39,7 @@ import InteractivePodium from '../../components/product/InteractivePodium';
 import GlassCard from '../../components/ui/GlassCard';
 import ProductReviews from '../../components/product/ProductReviews';
 import GoldShimmerText from '../../components/ui/GoldShimmerText';
+import { useLocalization } from '../../contexts/LocalizationContext';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -76,6 +77,7 @@ export default function ProductPodiumScreen() {
   const cart = useCart();
   const { addItem } = cart;
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { t } = useLocalization();
 
   const insets = useSafeAreaInsets();
   const [apiProduct, setApiProduct] = useState<ApiProduct | null>(null);
@@ -256,7 +258,7 @@ export default function ProductPodiumScreen() {
           </Animated.View>
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="alert-circle-outline" size={48} color={colors.text.muted} />
-            <Text style={{ ...typography.headline, color: colors.text.secondary, marginTop: spacing.lg }}>Product not found</Text>
+            <Text style={{ ...typography.headline, color: colors.text.secondary, marginTop: spacing.lg }}>{t('productPage.productNotFound')}</Text>
           </View>
         </SafeAreaView>
       </View>
@@ -343,7 +345,7 @@ export default function ProductPodiumScreen() {
                 </Text>
               )}
             </View>
-            <Text style={styles.vatNote}>VAT included</Text>
+            <Text style={styles.vatNote}>{t('productPage.vatIncluded')}</Text>
           </Animated.View>
 
           {/* Description card — expandable */}
@@ -360,7 +362,7 @@ export default function ProductPodiumScreen() {
                 <View style={styles.appIconWrap}>
                   <Ionicons name="information-circle-outline" size={18} color={colors.gold[500]} />
                 </View>
-                <Text style={styles.descriptionTitle}>About</Text>
+                <Text style={styles.descriptionTitle}>{t('productPage.about')}</Text>
                 <Ionicons
                   name={aboutOpen ? 'chevron-up' : 'chevron-down'}
                   size={18}
@@ -394,27 +396,27 @@ export default function ProductPodiumScreen() {
                     {product.size ? (
                       <View style={styles.specItem}>
                         <Ionicons name="resize-outline" size={14} color={colors.gold[500]} />
-                        <Text style={styles.specLabel}>Size</Text>
+                        <Text style={styles.specLabel}>{t('productPage.size')}</Text>
                         <Text style={styles.specValue}>{product.size}</Text>
                       </View>
                     ) : null}
                     {product.skinType ? (
                       <View style={styles.specItem}>
                         <Ionicons name="water-outline" size={14} color={colors.gold[500]} />
-                        <Text style={styles.specLabel}>Skin Type</Text>
+                        <Text style={styles.specLabel}>{t('productPage.skinType')}</Text>
                         <Text style={styles.specValue}>{product.skinType}</Text>
                       </View>
                     ) : null}
                     {product.usage ? (
                       <View style={styles.specItem}>
                         <Ionicons name="time-outline" size={14} color={colors.gold[500]} />
-                        <Text style={styles.specLabel}>Usage</Text>
+                        <Text style={styles.specLabel}>{t('productPage.usage')}</Text>
                         <Text style={styles.specValue}>{product.usage.replace(/-/g, ' ')}</Text>
                       </View>
                     ) : null}
                     <View style={styles.specItem}>
                       <Text style={styles.specFlag}>🇰🇷</Text>
-                      <Text style={styles.specLabel}>Origin</Text>
+                      <Text style={styles.specLabel}>{t('productPage.origin')}</Text>
                       <Text style={styles.specValue}>{product.origin || 'South Korea'}</Text>
                     </View>
                   </View>
@@ -438,7 +440,7 @@ export default function ProductPodiumScreen() {
                   <View style={styles.appIconWrap}>
                     <Ionicons name="hand-left-outline" size={18} color={colors.gold[500]} />
                   </View>
-                  <Text style={styles.appTitle}>Application Method</Text>
+                  <Text style={styles.appTitle}>{t('productPage.applicationMethod')}</Text>
                   <Ionicons
                     name={appMethodOpen ? 'chevron-up' : 'chevron-down'}
                     size={18}
@@ -496,9 +498,9 @@ export default function ProductPodiumScreen() {
                 <GlassCard>
                   <View style={styles.ingredientHeader}>
                     <View>
-                      <Text style={styles.ingredientTitle}>Ingredient DNA</Text>
+                      <Text style={styles.ingredientTitle}>{t('productPage.ingredientDna')}</Text>
                       <Text style={styles.ingredientSubtitle}>
-                        {product.ingredients.length} Active Ingredients
+                        {product.ingredients.length} {t('product.activeIngredients')}
                       </Text>
                     </View>
                     <Ionicons name="chevron-forward" size={20} color={colors.gold[500]} />
@@ -589,7 +591,7 @@ export default function ProductPodiumScreen() {
                 onPress={handleAddToCart}
               >
                 <Ionicons name="bag-add-outline" size={18} color={colors.gold[500]} />
-                <Text style={styles.addBtnText}>Add to Bag</Text>
+                <Text style={styles.addBtnText}>{t('productPage.addToBag')}</Text>
               </TouchableOpacity>
             )}
 

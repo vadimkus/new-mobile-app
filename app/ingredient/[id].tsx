@@ -27,6 +27,7 @@ import Svg, { Circle, Line } from 'react-native-svg';
 import { colors, typography, spacing, radius, layout } from '../../constants/theme';
 import { fetchProductById, type Product as ApiProduct } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLocalization } from '../../contexts/LocalizationContext';
 import GlassCard from '../../components/ui/GlassCard';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -140,6 +141,7 @@ function IngredientNode({ name, color, x, y, size, index, isSelected, onPress }:
 export default function IngredientExplorerScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user, token } = useAuth();
+  const { t } = useLocalization();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [apiProduct, setApiProduct] = useState<ApiProduct | null>(null);
   const [loading, setLoading] = useState(true);
@@ -225,7 +227,7 @@ export default function IngredientExplorerScreen() {
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="flask-outline" size={48} color={colors.text.muted} />
             <Text style={{ ...typography.headline, color: colors.text.secondary, marginTop: spacing.lg }}>
-              Ingredient data not available
+              {t('ingredientPage.ingredientDataNotAvailable')}
             </Text>
           </View>
         </SafeAreaView>
