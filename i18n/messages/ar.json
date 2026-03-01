@@ -1752,6 +1752,7 @@
     "origin": "المنشأ",
     "applicationMethod": "طريقة الاستخدام",
     "ingredientDna": "الحمض النووي للمكونات",
+    "activeIngredients": "مكونات نشطة",
     "addToBag": "أضف إلى الحقيبة"
   },
   "addressesPage": {

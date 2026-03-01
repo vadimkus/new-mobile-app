@@ -1752,6 +1752,7 @@
     "origin": "Origin",
     "applicationMethod": "Application Method",
     "ingredientDna": "Ingredient DNA",
+    "activeIngredients": "Active Ingredients",
     "addToBag": "Add to Bag"
   },
   "addressesPage": {

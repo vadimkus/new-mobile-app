@@ -19,7 +19,7 @@
 | Document | Description |
 |----------|-------------|
 | [HOME_SCREEN.md](./HOME_SCREEN.md) | Discover tab: header (favorites icon), categories, search, product cards, toast |
-| [PRODUCT_PAGE.md](./PRODUCT_PAGE.md) | Product detail: top nav (heart + share), orbital podium (luxury icons), bottom bar (Add to Bag / In Bag, bag icon), expandable sections, lightbox |
+| [PRODUCT_PAGE.md](./PRODUCT_PAGE.md) | Product detail: top nav (GoldShimmerText + heart + share), orbital podium (luxury icons, marquee labels), bottom bar (Add to Bag / In Bag, bag icon), expandable sections, lightbox |
 | [UI_COMPONENTS.md](./UI_COMPONENTS.md) | Reusable components, GlassCard, LuxuryIcon, glass design system, animations |
 | [LUXURY_ICONS.md](./LUXURY_ICONS.md) | Phosphor-based icon library, benefit keyword mapping, LuxuryIcon usage |
 | [CHECKOUT.md](./CHECKOUT.md) | Checkout flow, order summary, shipping, payment, order notes, totals |
@@ -42,8 +42,9 @@ app/profile/favorites.tsx   — Wishlist (luxury card list, Add All to Bag)
 app/skin-analysis.tsx       — Skin quiz flow
 app/profile/training.tsx    — Training content
 
-components/product/InteractivePodium.tsx  — Orbital constellation (LuxuryIcon pills)
+components/product/InteractivePodium.tsx  — Orbital constellation (LuxuryIcon pills, marquee labels)
 components/ui/GlassTabBar.tsx             — Custom tab bar + toast
+components/ui/GoldShimmerText.tsx         — Luxury text with gold shimmer effect
 components/product/ProductMiniCard.tsx    — Compact product card
 components/product/ProductHeroCard.tsx    — Featured product card
 

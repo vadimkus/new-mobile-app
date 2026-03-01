@@ -500,7 +500,7 @@ export default function ProductPodiumScreen() {
                     <View>
                       <Text style={styles.ingredientTitle}>{t('productPage.ingredientDna')}</Text>
                       <Text style={styles.ingredientSubtitle}>
-                        {product.ingredients.length} {t('product.activeIngredients')}
+                        {product.ingredients.length} {t('productPage.activeIngredients')}
                       </Text>
                     </View>
                     <Ionicons name="chevron-forward" size={20} color={colors.gold[500]} />

@@ -181,10 +181,30 @@ Any product name containing the key (case-insensitive) uses the local image inst
 ## Top Navigation
 
 - **Left**: Back button.
-- **Center**: "GENOSYS" title.
+- **Center**: "GENOSYS" title with **gold shimmer effect** — white text base with a gold sweep that glides across every 7 seconds.
 - **Right**: Favorites (heart) + Share. Heart is filled red when the product is favorited; both icons open favorites toggle and share sheet respectively.
 
+The title uses the `GoldShimmerText` component (`components/ui/GoldShimmerText.tsx`) and is absolutely positioned to stay perfectly centered regardless of button widths.
+
 Favorites and share live in the top bar so the bottom bar can focus on price and bag actions.
+
+### GoldShimmerText
+
+Luxury text effect using `@react-native-masked-view/masked-view`:
+
+```typescript
+<GoldShimmerText
+  text="GENOSYS"
+  style={{ fontSize: 24, fontWeight: '700', letterSpacing: 4 }}
+  shimmerInterval={7000}  // ms between shimmers
+  shimmerDuration={2000}  // ms for shimmer sweep
+/>
+```
+
+- **Base fill**: White (`#FFFFFF`)
+- **Shimmer**: 160px-wide gold gradient (`#C9A96E`) sweeps left-to-right
+- **Animation**: Reanimated `withRepeat` + `withSequence` + `withDelay`
+- **MaskedView**: Gradient is masked through text letterforms
 
 ## Bottom Action Bar
 
@@ -207,3 +227,15 @@ Benefit pills on the podium use **Phosphor icons** (see `docs/LUXURY_ICONS.md`) 
 - **Icon**: `LuxuryIcon` with `benefit.iconName` (from `matchBenefitIcon(benefitText)` or `getCycleIcon(index)`), size 20, duotone weight, gold tint.
 - **Label**: First word of benefit below the icon (e.g. "Hydrating", "Brightening").
 - **Detail card**: When a pill is selected, the detail card shows the same icon in a 48px circular container with gold background tint.
+
+### Marquee Scrolling Labels
+
+When a benefit pill is selected, long labels (e.g. "Dark Circle Diminishment") scroll horizontally inside the pill circle:
+
+- **Not selected**: Shows first word only (e.g. "Dark"), centered, clipped without ellipsis
+- **Selected**: Shows full label text in a 200px-wide inner container that scrolls via `translateX` animation
+- **Animation**: Reanimated `withRepeat` + `withSequence` — scrolls left to reveal overflow, pauses, scrolls back
+- **Speed**: ~50ms per pixel of overflow for readable pace
+- **Container**: 60px visible window with `overflow: 'hidden'`
+
+The `jsSelected` prop (regular React boolean from parent's `jsSelectedIdx === index`) triggers the marquee — no unreliable SharedValue polling.

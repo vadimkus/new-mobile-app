@@ -1752,6 +1752,7 @@
     "origin": "Происхождение",
     "applicationMethod": "Способ применения",
     "ingredientDna": "ДНК ингредиентов",
+    "activeIngredients": "активных ингредиентов",
     "addToBag": "Добавить в корзину"
   },
   "addressesPage": {

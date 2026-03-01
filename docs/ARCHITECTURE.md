@@ -28,7 +28,7 @@ genosys-new-app/
 │   ├── ingredient/[id].tsx
 │   └── checkout.tsx
 ├── components/
-│   ├── ui/                 # GlassCard, GoldButton, GlassTabBar, CategoryIcon, etc.
+│   ├── ui/                 # GlassCard, GoldButton, GlassTabBar, GoldShimmerText, CategoryIcon, etc.
 │   └── product/            # InteractivePodium, ProductMiniCard, ProductHeroCard, ProductReviews, etc.
 ├── constants/
 │   ├── theme.ts            # colors, typography, spacing, radius

@@ -266,11 +266,17 @@ function OrbitPill({
             <LuxuryIcon name={benefit.iconName} size={20} color="rgba(201, 169, 110, 0.7)" weight="duotone" />
           </View>
           <View style={styles.pillLabelWrap}>
-            <Animated.View style={[styles.pillLabelSlider, marqueeStyle]}>
-              <Text style={styles.pillLabel} numberOfLines={1}>
-                {jsSelected ? benefit.label : benefit.short}
+            {jsSelected ? (
+              <Animated.View style={[styles.pillLabelSlider, marqueeStyle]}>
+                <Text style={styles.pillLabel} numberOfLines={1} ellipsizeMode="clip">
+                  {benefit.label}
+                </Text>
+              </Animated.View>
+            ) : (
+              <Text style={[styles.pillLabel, { textAlign: 'center' }]} numberOfLines={1} ellipsizeMode="clip">
+                {benefit.short}
               </Text>
-            </Animated.View>
+            )}
           </View>
         </Animated.View>
       </GestureDetector>
@@ -785,9 +791,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center' as const,
   },
   pillLabelSlider: {
-    flexDirection: 'row' as const,
-    flexShrink: 0,
-    paddingLeft: 4,
+    width: 200,
   },
   pillLabel: {
     fontSize: 9,

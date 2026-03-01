@@ -36,6 +36,35 @@ Custom tab bar replacing default Expo Router tabs:
   - Bag icon bounce + golden halo ripple
   - Floating toast pill with product info
 
+### GoldShimmerText
+
+Luxury text effect with periodic gold shimmer sweep:
+
+```typescript
+import GoldShimmerText from '../components/ui/GoldShimmerText';
+
+<GoldShimmerText
+  text="GENOSYS"
+  style={{ fontSize: 24, fontWeight: '700', letterSpacing: 4 }}
+  shimmerInterval={7000}  // 7 seconds idle between shimmers
+  shimmerDuration={2000}  // 2 seconds for shimmer to sweep
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `text` | string | — | Text to render |
+| `style` | TextStyle | — | Font size, weight, letter spacing |
+| `shimmerInterval` | number | 7000 | ms to wait between shimmer sweeps |
+| `shimmerDuration` | number | 2000 | ms for shimmer to travel across |
+
+**Technical details**:
+- Uses `@react-native-masked-view/masked-view` to mask a gradient through text
+- White base fill (`#FFFFFF`) with 160px gold gradient (`#C9A96E`) sweep
+- Gradient: 7-stop with transparent edges → gold peak at center
+- Animation: Reanimated `withRepeat(withSequence(withDelay(...), withTiming(...)))`
+- Works in Expo Go — no native pixel extraction
+
 ### GoldButton
 
 Primary action button:
