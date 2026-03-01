@@ -28,10 +28,11 @@ genosys-new-app/
 │   ├── ingredient/[id].tsx
 │   └── checkout.tsx
 ├── components/
-│   ├── ui/                 # GlassCard, GoldButton, GlassTabBar, etc.
-│   └── product/            # ProductPodium, ProductMiniCard, ProductReviews, etc.
+│   ├── ui/                 # GlassCard, GoldButton, GlassTabBar, CategoryIcon, etc.
+│   └── product/            # InteractivePodium, ProductMiniCard, ProductHeroCard, ProductReviews, etc.
 ├── constants/
 │   ├── theme.ts            # colors, typography, spacing, radius
+│   ├── luxuryIcons.tsx     # Phosphor icon map, LuxuryIcon, benefit keyword matching
 │   └── mockData.ts         # fallback demo data
 ├── contexts/
 │   ├── AuthContext.tsx

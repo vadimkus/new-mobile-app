@@ -174,7 +174,7 @@ export default function ProductReviews({ productId }: Props) {
           <Ionicons
             name={expanded ? 'chevron-up' : 'chevron-down'}
             size={18}
-            color={colors.text.tertiary}
+            color={colors.gold[500]}
           />
         </TouchableOpacity>
 

@@ -211,18 +211,20 @@ export default function CheckoutScreen() {
         </Animated.View>
 
         {/* Notes */}
-        <Animated.View entering={FadeInDown.duration(500).delay(350)}>
+        <Animated.View entering={FadeInDown.duration(500).delay(350)} style={styles.notesSection}>
           <Text style={styles.sectionTitle}>Order Notes</Text>
-          <TextInput
-            style={[styles.input, styles.notesInput]}
-            value={notes}
-            onChangeText={setNotes}
-            placeholder="Any special instructions..."
-            placeholderTextColor={colors.text.muted}
-            multiline
-            numberOfLines={3}
-            selectionColor={colors.gold[500]}
-          />
+          <GlassCard>
+            <TextInput
+              style={[styles.notesInner]}
+              value={notes}
+              onChangeText={setNotes}
+              placeholder="Any special instructions..."
+              placeholderTextColor={colors.text.muted}
+              multiline
+              numberOfLines={3}
+              selectionColor={colors.gold[500]}
+            />
+          </GlassCard>
         </Animated.View>
 
         {/* Total */}
@@ -304,7 +306,8 @@ const styles = StyleSheet.create({
   inputGroup: { marginBottom: spacing.lg },
   inputLabel: { ...typography.label, color: colors.text.secondary, marginBottom: spacing.sm, fontSize: 13 },
   input: { ...typography.body, color: colors.text.primary, backgroundColor: colors.bg.surface, borderWidth: 1, borderColor: colors.glass.border, borderRadius: radius.md, paddingVertical: 14, paddingHorizontal: 16 },
-  notesInput: { minHeight: 80, textAlignVertical: 'top' },
+  notesSection: { marginBottom: spacing.md },
+  notesInner: { ...typography.body, color: colors.text.primary, minHeight: 72, textAlignVertical: 'top' },
   selectButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.bg.surface, borderWidth: 1, borderColor: colors.glass.border, borderRadius: radius.md, paddingVertical: 14, paddingHorizontal: 16 },
   selectText: { ...typography.body, color: colors.text.primary },
 

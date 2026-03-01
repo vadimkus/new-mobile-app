@@ -1664,5 +1664,115 @@
     "benefitBirthdayGift": "هدية عيد الميلاد",
     "benefitExclusiveProducts": "منتجات حصرية",
     "loginRequired": "يرجى تسجيل الدخول لعرض بطاقة العضوية"
+  },
+  "placeholders": {
+    "yourName": "اسمك",
+    "streetBuildingApartment": "الشارع، المبنى، الشقة",
+    "enterPromoCode": "أدخل رمز الخصم",
+    "anySpecialInstructions": "أي تعليمات خاصة...",
+    "fullName": "الاسم الكامل",
+    "addressRequired": "العنوان *",
+    "emirate": "الإمارة",
+    "phoneRequired": "الهاتف *",
+    "dateFormat": "يوم/شهر/سنة",
+    "dubai": "دبي"
+  },
+  "alerts": {
+    "error": "خطأ",
+    "fillAddressAndPhone": "يرجى ملء العنوان ورقم الهاتف",
+    "deleteAddress": "حذف العنوان",
+    "removeThisAddress": "هل تريد إزالة هذا العنوان؟",
+    "missingInfo": "معلومات ناقصة",
+    "fillShippingDetails": "يرجى ملء جميع تفاصيل الشحن",
+    "signInRequired": "تسجيل الدخول مطلوب",
+    "signInToPlaceOrder": "يرجى تسجيل الدخول لتقديم الطلب",
+    "failedToPlaceOrder": "فشل في تقديم الطلب",
+    "somethingWentWrong": "حدث خطأ ما",
+    "loginFailed": "فشل تسجيل الدخول",
+    "biometricLoginFailed": "فشل تسجيل الدخول بالبصمة",
+    "fillAllRequiredFields": "يرجى ملء جميع الحقول المطلوبة",
+    "enterValidEmail": "يرجى إدخال بريد إلكتروني صالح",
+    "passwordMinLength": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+    "phoneNumberRequired": "رقم الهاتف مطلوب",
+    "deliveryAddressRequired": "عنوان التوصيل مطلوب",
+    "selectYourEmirate": "يرجى اختيار إمارتك",
+    "acceptPrivacyPolicy": "يرجى قبول سياسة الخصوصية للمتابعة",
+    "accountCreated": "تم إنشاء الحساب",
+    "accountCreatedSuccess": "تم إنشاء حسابك بنجاح!",
+    "registrationFailed": "فشل التسجيل",
+    "googleLoginFailed": "فشل تسجيل الدخول بـ Google",
+    "appleLoginFailed": "فشل تسجيل الدخول بـ Apple",
+    "saved": "تم الحفظ",
+    "profileUpdated": "تم تحديث ملفك الشخصي",
+    "failedToUpdateProfile": "فشل في تحديث الملف الشخصي",
+    "accountDeleted": "تم حذف الحساب",
+    "accountRemoved": "تم إزالة حسابك.",
+    "failedToDeleteAccount": "فشل في حذف الحساب",
+    "ritualComplete": "اكتمل الروتين! 🎉",
+    "streakMessage": "سلسلة {streak} يوم! بشرتك ستشكرك.",
+    "loginRequired": "تسجيل الدخول مطلوب",
+    "loginForBiometric": "يرجى تسجيل الدخول لتفعيل المصادقة بالبصمة.",
+    "addedToBag": "أُضيف إلى الحقيبة",
+    "itemsAddedFromOrder": "تمت إضافة جميع المنتجات من هذا الطلب إلى حقيبتك."
+  },
+  "productPage": {
+    "productNotFound": "المنتج غير موجود",
+    "vatIncluded": "شامل الضريبة",
+    "about": "حول",
+    "size": "الحجم",
+    "skinType": "نوع البشرة",
+    "usage": "الاستخدام",
+    "origin": "المنشأ",
+    "applicationMethod": "طريقة الاستخدام",
+    "ingredientDna": "الحمض النووي للمكونات",
+    "addToBag": "أضف إلى الحقيبة"
+  },
+  "addressesPage": {
+    "addresses": "العناوين",
+    "noAddressesYet": "لا توجد عناوين بعد",
+    "addDeliveryAddress": "أضف عنوان التوصيل للبدء",
+    "default": "افتراضي",
+    "setDefault": "تعيين كافتراضي",
+    "cancel": "إلغاء"
+  },
+  "helpPage": {
+    "contactSupport": "اتصل بالدعم",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "whatsApp": "واتساب",
+    "faq": "الأسئلة الشائعة",
+    "businessHours": "ساعات العمل"
+  },
+  "trainingPage": {
+    "pdf": "PDF"
+  },
+  "discoverPage": {
+    "genosys": "جينوسيس"
+  },
+  "privacyPage": {
+    "privacyPolicy": "سياسة الخصوصية"
+  },
+  "ingredientPage": {
+    "ingredientDna": "الحمض النووي للمكونات",
+    "formula": "التركيبة",
+    "keyActive": "المكون الفعال الرئيسي",
+    "efficacyRating": "تقييم الفعالية"
+  },
+  "aboutPage": {
+    "aboutGenosys": "عن جينوسيس",
+    "genosys": "جينوسيس",
+    "aboutUs": "من نحن",
+    "ourMission": "مهمتنا",
+    "companyInformation": "معلومات الشركة"
+  },
+  "paymentPage": {
+    "defaultPaymentMethod": "طريقة الدفع الافتراضية",
+    "cashOnDelivery": "الدفع عند الاستلام",
+    "payWhenReceive": "ادفع عند استلام طلبك",
+    "paySecurelyWithStripe": "ادفع بأمان عبر Stripe"
+  },
+  "ritual": {
+    "ritualCompleteTitle": "اكتمل الروتين! 🎉",
+    "ritualCompleteMessage": "سلسلة {streak} يوم! بشرتك ستشكرك."
   }
 }

@@ -19,13 +19,15 @@
 
 ## Cart & Checkout
 
-- **Cart**: In-memory + AsyncStorage fallback; badge on Discover header.
-- **Checkout**: `/checkout` — order summary, shipping form, payment (COD/card), `createOrder` API, then clear cart.
+- **Cart**: In-memory + AsyncStorage fallback; bag tab shows count; product page footer has bag icon linking to `/(tabs)/bag`.
+- **Checkout**: `/checkout` — order summary, shipping form, payment (COD/card), promo code, **order notes** (in GlassCard with bottom margin to avoid overlapping total block), then `createOrder` API and clear cart. See `docs/CHECKOUT.md`.
 
 ## Favorites (wishlist)
 
 - **Local**: Stored in AsyncStorage.
 - **Server sync**: When user is logged in, favorites sync with `/user/wishlist` (GET/POST/DELETE); merge on load, fire-and-forget on toggle.
+- **Home**: Favorites icon in Discover header (left) with count badge; tap → `/profile/favorites`.
+- **Wishlist screen**: Luxury card list, per-item Add/In Bag, "Add All to Bag", remove heart. See `docs/FAVORITES.md`.
 
 ## Product catalog
 

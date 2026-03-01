@@ -6,7 +6,7 @@ The Discover tab (`app/(tabs)/discover.tsx`) is the main product browsing experi
 
 ```
 ┌─────────────────────────────────┐
-│  GENOSYS (header)               │
+│  [♥]   GENOSYS   [Avatar]       │  ← Left: Favorites (heart + badge). Right: Profile.
 ├─────────────────────────────────┤
 │  [Search bar]                   │
 ├─────────────────────────────────┤
@@ -28,6 +28,12 @@ The Discover tab (`app/(tabs)/discover.tsx`) is the main product browsing experi
 └─────────────────────────────────┘
 │  [Glass Tab Bar]                │
 ```
+
+## Header
+
+- **Left**: Favorites (heart icon). Outline when empty; filled red when the user has favorites. Gold count badge (e.g. "3" or "9+") when count &gt; 0. Tap → `/profile/favorites`. See `docs/FAVORITES.md`.
+- **Center**: "GENOSYS" + tagline (e.g. "Premium Skincare").
+- **Right**: Profile avatar (initial) → `/profile`.
 
 ## Categories
 

@@ -1664,5 +1664,115 @@
     "benefitBirthdayGift": "Birthday gift",
     "benefitExclusiveProducts": "Exclusive products",
     "loginRequired": "Please sign in to view your membership card"
+  },
+  "placeholders": {
+    "yourName": "Your name",
+    "streetBuildingApartment": "Street, building, apartment",
+    "enterPromoCode": "Enter promo code",
+    "anySpecialInstructions": "Any special instructions...",
+    "fullName": "Full Name",
+    "addressRequired": "Address *",
+    "emirate": "Emirate",
+    "phoneRequired": "Phone *",
+    "dateFormat": "DD/MM/YYYY",
+    "dubai": "Dubai"
+  },
+  "alerts": {
+    "error": "Error",
+    "fillAddressAndPhone": "Please fill in address and phone",
+    "deleteAddress": "Delete Address",
+    "removeThisAddress": "Remove this address?",
+    "missingInfo": "Missing Info",
+    "fillShippingDetails": "Please fill in all shipping details",
+    "signInRequired": "Sign In Required",
+    "signInToPlaceOrder": "Please sign in to place an order",
+    "failedToPlaceOrder": "Failed to place order",
+    "somethingWentWrong": "Something went wrong",
+    "loginFailed": "Login failed",
+    "biometricLoginFailed": "Biometric login failed",
+    "fillAllRequiredFields": "Please fill in all required fields",
+    "enterValidEmail": "Please enter a valid email address",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "phoneNumberRequired": "Phone number is required",
+    "deliveryAddressRequired": "Delivery address is required",
+    "selectYourEmirate": "Please select your emirate",
+    "acceptPrivacyPolicy": "Please accept the Privacy Policy to continue",
+    "accountCreated": "Account Created",
+    "accountCreatedSuccess": "Your account has been created successfully!",
+    "registrationFailed": "Registration failed",
+    "googleLoginFailed": "Google login failed",
+    "appleLoginFailed": "Apple login failed",
+    "saved": "Saved",
+    "profileUpdated": "Your profile has been updated",
+    "failedToUpdateProfile": "Failed to update profile",
+    "accountDeleted": "Account Deleted",
+    "accountRemoved": "Your account has been removed.",
+    "failedToDeleteAccount": "Failed to delete account",
+    "ritualComplete": "Ritual Complete! 🎉",
+    "streakMessage": "{streak} day streak! Your skin will thank you.",
+    "loginRequired": "Login Required",
+    "loginForBiometric": "Please log in to enable biometric authentication.",
+    "addedToBag": "Added to Bag",
+    "itemsAddedFromOrder": "All items from this order have been added to your bag."
+  },
+  "productPage": {
+    "productNotFound": "Product not found",
+    "vatIncluded": "VAT included",
+    "about": "About",
+    "size": "Size",
+    "skinType": "Skin Type",
+    "usage": "Usage",
+    "origin": "Origin",
+    "applicationMethod": "Application Method",
+    "ingredientDna": "Ingredient DNA",
+    "addToBag": "Add to Bag"
+  },
+  "addressesPage": {
+    "addresses": "Addresses",
+    "noAddressesYet": "No addresses yet",
+    "addDeliveryAddress": "Add your delivery address to get started",
+    "default": "Default",
+    "setDefault": "Set Default",
+    "cancel": "Cancel"
+  },
+  "helpPage": {
+    "contactSupport": "Contact Support",
+    "email": "Email",
+    "phone": "Phone",
+    "whatsApp": "WhatsApp",
+    "faq": "Frequently Asked Questions",
+    "businessHours": "Business Hours"
+  },
+  "trainingPage": {
+    "pdf": "PDF"
+  },
+  "discoverPage": {
+    "genosys": "GENOSYS"
+  },
+  "privacyPage": {
+    "privacyPolicy": "Privacy Policy"
+  },
+  "ingredientPage": {
+    "ingredientDna": "Ingredient DNA",
+    "formula": "Formula",
+    "keyActive": "Key Active",
+    "efficacyRating": "Efficacy Rating"
+  },
+  "aboutPage": {
+    "aboutGenosys": "About GENOSYS",
+    "genosys": "GENOSYS",
+    "aboutUs": "About Us",
+    "ourMission": "Our Mission",
+    "companyInformation": "Company Information"
+  },
+  "paymentPage": {
+    "defaultPaymentMethod": "Default Payment Method",
+    "cashOnDelivery": "Cash on Delivery",
+    "payWhenReceive": "Pay when you receive your order",
+    "paySecurelyWithStripe": "Pay securely with Stripe"
+  },
+  "ritual": {
+    "ritualCompleteTitle": "Ritual Complete! 🎉",
+    "ritualCompleteMessage": "{streak} day streak! Your skin will thank you."
   }
 }

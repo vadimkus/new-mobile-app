@@ -38,6 +38,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { colors, typography, spacing, radius } from '../../constants/theme';
 import { useImageColors } from '../../hooks/useImageColors';
+import { LuxuryIcon, matchBenefitIcon, getCycleIcon, type LuxuryIconName } from '../../constants/luxuryIcons';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
@@ -59,8 +60,6 @@ const ROTATION_SENSITIVITY = 0.006;
 const SPRING_ORBIT = { damping: 18, stiffness: 120, mass: 0.8 };
 const SPRING_SELECT = { damping: 14, stiffness: 160, mass: 0.6 };
 
-const EMOJIS = ['✨', '💧', '🌿', '🔬', '💎', '🧬', '☀️'];
-
 const GOLD = colors.gold[500];
 const GOLD_DIM = 'rgba(201, 169, 110, 0.12)';
 const GOLD_GLOW = 'rgba(201, 169, 110, 0.35)';
@@ -70,8 +69,9 @@ const BG = colors.bg.primary;
 
 interface BenefitData {
   short: string;
+  label: string;
   detail: string;
-  emoji: string;
+  iconName: LuxuryIconName;
 }
 
 function firstWord(str: string): string {
@@ -84,12 +84,17 @@ function parseBenefit(raw: any, i: number): BenefitData {
     const dash = raw.indexOf(' - ');
     const label = dash > 0 ? raw.slice(0, dash).trim() : raw.trim();
     const detail = dash > 0 ? raw.slice(dash + 3).trim() : label;
-    return { short: firstWord(label), detail, emoji: EMOJIS[i % EMOJIS.length] };
+    const iconName = matchBenefitIcon(raw) !== 'sparkle' ? matchBenefitIcon(raw) : getCycleIcon(i);
+    return { short: firstWord(label), label, detail, iconName };
   }
+  const fullLabel = raw?.label || `Benefit ${i + 1}`;
   return {
-    short: firstWord(raw?.label || `Benefit ${i + 1}`),
+    short: firstWord(fullLabel),
+    label: fullLabel.trim(),
     detail: raw?.description || '',
-    emoji: raw?.emoji || EMOJIS[i % EMOJIS.length],
+    iconName: matchBenefitIcon(fullLabel || raw?.description || '') !== 'sparkle'
+      ? matchBenefitIcon(fullLabel || raw?.description || '')
+      : getCycleIcon(i),
   };
 }
 
@@ -220,6 +225,42 @@ function OrbitPill({
     runOnJS(onTap)(index);
   });
 
+  const [isSelected, setIsSelected] = useState(false);
+  const marqueeX = useSharedValue(0);
+  const [textW, setTextW] = useState(0);
+
+  const containerW = 60;
+  const needsScroll = textW > containerW;
+
+  useEffect(() => {
+    const checkSelected = () => {
+      setIsSelected(selectedIdx.value === index);
+    };
+    const id = setInterval(checkSelected, 200);
+    return () => clearInterval(id);
+  }, [selectedIdx, index]);
+
+  useEffect(() => {
+    if (isSelected && needsScroll) {
+      const travel = textW - containerW + 8;
+      marqueeX.value = 0;
+      marqueeX.value = withRepeat(
+        withSequence(
+          withDelay(600, withTiming(-travel, { duration: travel * 40, easing: Easing.linear })),
+          withDelay(800, withTiming(0, { duration: travel * 40, easing: Easing.linear })),
+        ),
+        -1,
+      );
+    } else {
+      cancelAnimation(marqueeX);
+      marqueeX.value = withTiming(0, { duration: 200 });
+    }
+  }, [isSelected, needsScroll, textW]);
+
+  const marqueeStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: marqueeX.value }],
+  }));
+
   return (
     <Animated.View style={pillStyle}>
       {/* Outer aura glow */}
@@ -227,8 +268,23 @@ function OrbitPill({
 
       <GestureDetector gesture={tap}>
         <Animated.View style={[styles.pillCircle, borderStyle]}>
-          <Text style={styles.pillEmoji}>{benefit.emoji}</Text>
-          <Text style={styles.pillLabel} numberOfLines={1}>{benefit.short}</Text>
+          <View style={styles.pillIconWrap}>
+            <LuxuryIcon name={benefit.iconName} size={20} color="rgba(201, 169, 110, 0.7)" weight="duotone" />
+          </View>
+          <View style={styles.pillLabelWrap}>
+            <Animated.View style={marqueeStyle}>
+              <Text
+                style={styles.pillLabel}
+                numberOfLines={1}
+                onLayout={(e) => {
+                  const w = e.nativeEvent.layout.width;
+                  if (w > 0 && w !== textW) setTextW(w);
+                }}
+              >
+                {isSelected ? benefit.label : benefit.short}
+              </Text>
+            </Animated.View>
+          </View>
         </Animated.View>
       </GestureDetector>
     </Animated.View>
@@ -294,7 +350,9 @@ function DetailCard({ benefit, visible }: { benefit: BenefitData | null; visible
     <Animated.View style={[styles.detailCard, a]} pointerEvents={visible ? 'auto' : 'none'}>
       <BlurView intensity={Platform.OS === 'ios' ? 30 : 45} tint="dark" style={styles.detailBlur}>
         <View style={styles.detailInner}>
-          <Text style={styles.detailEmoji}>{benefit.emoji}</Text>
+          <View style={styles.detailIconWrap}>
+            <LuxuryIcon name={benefit.iconName} size={28} color={GOLD} weight="duotone" />
+          </View>
           <Text style={styles.detailTitle}>{benefit.short}</Text>
           {benefit.detail ? <Text style={styles.detailText}>{benefit.detail}</Text> : null}
         </View>
@@ -731,7 +789,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
   },
-  pillEmoji: { fontSize: 16, marginBottom: 2 },
+  pillIconWrap: { marginBottom: 3, alignItems: 'center' as const },
+  pillLabelWrap: {
+    width: 60,
+    overflow: 'hidden' as const,
+    alignItems: 'center' as const,
+  },
   pillLabel: {
     fontSize: 9,
     fontWeight: '700',
@@ -772,7 +835,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(201, 169, 110, 0.04)',
     alignItems: 'center',
   },
-  detailEmoji: { fontSize: 26, marginBottom: spacing.xs },
+  detailIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(201, 169, 110, 0.08)',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginBottom: spacing.sm,
+  },
   detailTitle: {
     ...typography.headline,
     color: colors.gold[500],

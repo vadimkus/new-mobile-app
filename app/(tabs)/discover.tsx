@@ -16,6 +16,7 @@ import * as Haptics from 'expo-haptics';
 import { colors, typography, spacing, radius, layout } from '../../constants/theme';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
+import { useFavorites } from '../../contexts/FavoritesContext';
 import { useLocalization } from '../../contexts/LocalizationContext';
 import { fetchProducts, fetchCategories, type Product, type CategoryItem } from '../../services/api';
 import { getCachedProducts, setCachedProducts } from '../../services/productCache';
@@ -39,6 +40,7 @@ function getLocalImage(name: string): any | undefined {
 export default function DiscoverScreen() {
   const { user, token } = useAuth();
   const { addItem } = useCart();
+  const { count: favCount } = useFavorites();
   const { t } = useLocalization();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -147,7 +149,22 @@ export default function DiscoverScreen() {
       >
         {/* Header */}
         <Animated.View entering={FadeInDown.duration(600)} style={styles.header}>
-          <View style={{ width: 40 }} />
+          <TouchableOpacity
+            style={styles.headerIconBtn}
+            onPress={() => router.push('/profile/favorites')}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={favCount > 0 ? 'heart' : 'heart-outline'}
+              size={22}
+              color={favCount > 0 ? '#FF3B30' : colors.text.secondary}
+            />
+            {favCount > 0 && (
+              <View style={styles.favBadge}>
+                <Text style={styles.favBadgeText}>{favCount > 9 ? '9+' : favCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
 
           <View style={styles.headerCenter}>
             <Text style={styles.brandName}>GENOSYS</Text>
@@ -295,6 +312,20 @@ const styles = StyleSheet.create({
   headerCenter: { alignItems: 'center' },
   brandName: { ...typography.title2, letterSpacing: 4, fontSize: 24 },
   brandTagline: { ...typography.caption1, color: colors.gold[500], marginTop: 2, letterSpacing: 0.5 },
+  headerIconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  favBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 0,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: colors.gold[500],
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  favBadgeText: { fontSize: 9, fontWeight: '800' as const, color: '#000' },
   avatarBtn: { width: 36, height: 36, borderRadius: 18, borderWidth: 1.5, borderColor: colors.gold[500], alignItems: 'center', justifyContent: 'center' },
   avatarText: { ...typography.label, color: colors.gold[500], fontSize: 14 },
 

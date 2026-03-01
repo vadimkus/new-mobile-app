@@ -178,12 +178,32 @@ Any product name containing the key (case-insensitive) uses the local image inst
 5. Render InteractivePodium + expandable sections + reviews
 ```
 
+## Top Navigation
+
+- **Left**: Back button.
+- **Center**: "GENOSYS" title.
+- **Right**: Favorites (heart) + Share. Heart is filled red when the product is favorited; both icons open favorites toggle and share sheet respectively.
+
+Favorites and share live in the top bar so the bottom bar can focus on price and bag actions.
+
 ## Bottom Action Bar
 
 Floating glass pill design matching the home screen tab bar:
 
-- **Price** — left section
-- **Add to Bag** — center (gold icon + text), triggers bag bounce + toast
-- **Favorite** — right (heart icon, red when favorited)
-- **Shimmer** — gold line sweeps across on add to bag
-- **Glassmorphism** — `BlurView` with rounded corners and subtle border
+- **Price** — left (e.g. "370.00 AED").
+- **Add to Bag / In Bag** — center:
+  - **Default**: Bag-add icon + "Add to Bag" (gold). On tap: add item, shimmer animation, button transitions to "In Bag" state.
+  - **In Bag**: Checkmark + "In Bag" + quantity pill (e.g. "2"). Button has subtle gold-tinted background; tap adds another. Spring scale animation on each add.
+- **Bag icon** — right: Cart icon with **live count badge** (gold pill, e.g. "1" or "99+"). Tap → `router.push('/(tabs)/bag')`. Badge uses spring animation when count changes.
+- **Shimmer** — gold line sweeps across the bar on add to bag.
+- **Glassmorphism** — `BlurView` with rounded corners and subtle border.
+
+Cart state is from `useCart()`: `items`, `itemCount`, and per-product quantity for "In Bag" and the quantity pill.
+
+## Orbiting Pills: Luxury Icons
+
+Benefit pills on the podium use **Phosphor icons** (see `docs/LUXURY_ICONS.md`) instead of text emojis:
+
+- **Icon**: `LuxuryIcon` with `benefit.iconName` (from `matchBenefitIcon(benefitText)` or `getCycleIcon(index)`), size 20, duotone weight, gold tint.
+- **Label**: First word of benefit below the icon (e.g. "Hydrating", "Brightening").
+- **Detail card**: When a pill is selected, the detail card shows the same icon in a 48px circular container with gold background tint.

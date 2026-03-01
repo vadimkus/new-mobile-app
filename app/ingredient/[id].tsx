@@ -383,12 +383,6 @@ export default function IngredientExplorerScreen() {
                   </View>
                 </View>
 
-                {/* Cross-sell link */}
-                <TouchableOpacity style={styles.crossSell} onPress={() => router.push('/(tabs)/discover')}>
-                  <Text style={styles.crossSellText}>
-                    Browse GENOSYS products →
-                  </Text>
-                </TouchableOpacity>
               </GlassCard>
             </Animated.View>
           )}
@@ -568,13 +562,5 @@ const styles = StyleSheet.create({
   },
   diamonds: {
     flexDirection: 'row',
-  },
-  crossSell: {
-    marginBottom: spacing.md,
-  },
-  crossSellText: {
-    ...typography.headline,
-    color: colors.gold[500],
-    fontSize: 15,
   },
 });

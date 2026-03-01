@@ -1664,5 +1664,115 @@
     "benefitBirthdayGift": "Подарок на день рождения",
     "benefitExclusiveProducts": "Эксклюзивные продукты",
     "loginRequired": "Войдите, чтобы увидеть вашу карту участника"
+  },
+  "placeholders": {
+    "yourName": "Ваше имя",
+    "streetBuildingApartment": "Улица, здание, квартира",
+    "enterPromoCode": "Введите промокод",
+    "anySpecialInstructions": "Любые особые пожелания...",
+    "fullName": "Полное имя",
+    "addressRequired": "Адрес *",
+    "emirate": "Эмират",
+    "phoneRequired": "Телефон *",
+    "dateFormat": "ДД/ММ/ГГГГ",
+    "dubai": "Дубай"
+  },
+  "alerts": {
+    "error": "Ошибка",
+    "fillAddressAndPhone": "Заполните адрес и телефон",
+    "deleteAddress": "Удалить адрес",
+    "removeThisAddress": "Удалить этот адрес?",
+    "missingInfo": "Недостаточно данных",
+    "fillShippingDetails": "Заполните все данные доставки",
+    "signInRequired": "Требуется вход",
+    "signInToPlaceOrder": "Войдите, чтобы оформить заказ",
+    "failedToPlaceOrder": "Не удалось оформить заказ",
+    "somethingWentWrong": "Что-то пошло не так",
+    "loginFailed": "Не удалось войти",
+    "biometricLoginFailed": "Не удалось войти по биометрии",
+    "fillAllRequiredFields": "Заполните все обязательные поля",
+    "enterValidEmail": "Введите корректный email",
+    "passwordMinLength": "Пароль должен быть не менее 6 символов",
+    "phoneNumberRequired": "Требуется номер телефона",
+    "deliveryAddressRequired": "Требуется адрес доставки",
+    "selectYourEmirate": "Выберите эмират",
+    "acceptPrivacyPolicy": "Примите Политику конфиденциальности для продолжения",
+    "accountCreated": "Аккаунт создан",
+    "accountCreatedSuccess": "Ваш аккаунт успешно создан!",
+    "registrationFailed": "Не удалось зарегистрироваться",
+    "googleLoginFailed": "Не удалось войти через Google",
+    "appleLoginFailed": "Не удалось войти через Apple",
+    "saved": "Сохранено",
+    "profileUpdated": "Ваш профиль обновлён",
+    "failedToUpdateProfile": "Не удалось обновить профиль",
+    "accountDeleted": "Аккаунт удалён",
+    "accountRemoved": "Ваш аккаунт был удалён.",
+    "failedToDeleteAccount": "Не удалось удалить аккаунт",
+    "ritualComplete": "Ритуал завершён! 🎉",
+    "streakMessage": "Серия {streak} дней! Ваша кожа скажет вам спасибо.",
+    "loginRequired": "Требуется вход",
+    "loginForBiometric": "Войдите, чтобы включить биометрическую аутентификацию.",
+    "addedToBag": "Добавлено в корзину",
+    "itemsAddedFromOrder": "Все товары из этого заказа добавлены в корзину."
+  },
+  "productPage": {
+    "productNotFound": "Товар не найден",
+    "vatIncluded": "НДС включён",
+    "about": "О продукте",
+    "size": "Размер",
+    "skinType": "Тип кожи",
+    "usage": "Использование",
+    "origin": "Происхождение",
+    "applicationMethod": "Способ применения",
+    "ingredientDna": "ДНК ингредиентов",
+    "addToBag": "Добавить в корзину"
+  },
+  "addressesPage": {
+    "addresses": "Адреса",
+    "noAddressesYet": "Адресов пока нет",
+    "addDeliveryAddress": "Добавьте адрес доставки, чтобы начать",
+    "default": "По умолчанию",
+    "setDefault": "Сделать по умолчанию",
+    "cancel": "Отмена"
+  },
+  "helpPage": {
+    "contactSupport": "Связаться с поддержкой",
+    "email": "Email",
+    "phone": "Телефон",
+    "whatsApp": "WhatsApp",
+    "faq": "Часто задаваемые вопросы",
+    "businessHours": "Часы работы"
+  },
+  "trainingPage": {
+    "pdf": "PDF"
+  },
+  "discoverPage": {
+    "genosys": "GENOSYS"
+  },
+  "privacyPage": {
+    "privacyPolicy": "Политика конфиденциальности"
+  },
+  "ingredientPage": {
+    "ingredientDna": "ДНК ингредиентов",
+    "formula": "Формула",
+    "keyActive": "Активный компонент",
+    "efficacyRating": "Рейтинг эффективности"
+  },
+  "aboutPage": {
+    "aboutGenosys": "О GENOSYS",
+    "genosys": "GENOSYS",
+    "aboutUs": "О нас",
+    "ourMission": "Наша миссия",
+    "companyInformation": "Информация о компании"
+  },
+  "paymentPage": {
+    "defaultPaymentMethod": "Способ оплаты по умолчанию",
+    "cashOnDelivery": "Оплата при доставке",
+    "payWhenReceive": "Оплата при получении заказа",
+    "paySecurelyWithStripe": "Безопасная оплата через Stripe"
+  },
+  "ritual": {
+    "ritualCompleteTitle": "Ритуал завершён! 🎉",
+    "ritualCompleteMessage": "Серия {streak} дней! Ваша кожа скажет вам спасибо."
   }
 }

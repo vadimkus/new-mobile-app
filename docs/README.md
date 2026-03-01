@@ -18,9 +18,12 @@
 
 | Document | Description |
 |----------|-------------|
-| [HOME_SCREEN.md](./HOME_SCREEN.md) | Discover tab: categories, search, product cards, toast |
-| [PRODUCT_PAGE.md](./PRODUCT_PAGE.md) | Product detail: orbital podium, expandable sections, lightbox |
-| [UI_COMPONENTS.md](./UI_COMPONENTS.md) | Reusable components, glass design system, animations |
+| [HOME_SCREEN.md](./HOME_SCREEN.md) | Discover tab: header (favorites icon), categories, search, product cards, toast |
+| [PRODUCT_PAGE.md](./PRODUCT_PAGE.md) | Product detail: top nav (heart + share), orbital podium (luxury icons), bottom bar (Add to Bag / In Bag, bag icon), expandable sections, lightbox |
+| [UI_COMPONENTS.md](./UI_COMPONENTS.md) | Reusable components, GlassCard, LuxuryIcon, glass design system, animations |
+| [LUXURY_ICONS.md](./LUXURY_ICONS.md) | Phosphor-based icon library, benefit keyword mapping, LuxuryIcon usage |
+| [CHECKOUT.md](./CHECKOUT.md) | Checkout flow, order summary, shipping, payment, order notes, totals |
+| [FAVORITES.md](./FAVORITES.md) | Wishlist screen, home favorites icon, luxury card design, Add All to Bag |
 | [SKIN_ANALYSIS.md](./SKIN_ANALYSIS.md) | Skin AI tab, quiz flow, recommendations |
 | [TRAINING.md](./TRAINING.md) | Training content: PDFs, videos |
 | [ADAPTIVE_COLORS.md](./ADAPTIVE_COLORS.md) | Automatic color derivation from product images |
@@ -30,18 +33,22 @@
 ### Key Files
 
 ```
-app/(tabs)/discover.tsx     — Home screen
+app/(tabs)/discover.tsx     — Home screen (favorites icon in header)
+app/(tabs)/bag.tsx          — Bag / cart (route: /(tabs)/bag)
 app/(tabs)/skin-ai.tsx      — Skin AI tab
-app/product/[id].tsx        — Product detail
+app/product/[id].tsx        — Product detail (top nav: heart + share; bottom: Add to Bag / In Bag, bag icon)
+app/checkout.tsx            — Checkout (order notes in GlassCard, no overlap with total)
+app/profile/favorites.tsx   — Wishlist (luxury card list, Add All to Bag)
 app/skin-analysis.tsx       — Skin quiz flow
 app/profile/training.tsx    — Training content
 
-components/product/InteractivePodium.tsx  — Orbital constellation
+components/product/InteractivePodium.tsx  — Orbital constellation (LuxuryIcon pills)
 components/ui/GlassTabBar.tsx             — Custom tab bar + toast
 components/product/ProductMiniCard.tsx    — Compact product card
 components/product/ProductHeroCard.tsx    — Featured product card
 
-hooks/useImageColors.ts                   — Adaptive color derivation
+constants/luxuryIcons.tsx   — Phosphor icon map, matchBenefitIcon, LuxuryIcon
+hooks/useImageColors.ts     — Adaptive color derivation
 ```
 
 ### Local Image Overrides

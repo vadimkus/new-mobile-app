@@ -63,21 +63,21 @@ The orbital constellation component (see `PRODUCT_PAGE.md` for full details):
 />
 ```
 
-#### Orbit Sizing
+#### Orbiting Pills: Icons and Sizing
 
-The orbit is dynamically sized to fit within the screen bounds:
+Pills use **LuxuryIcon** (Phosphor duotone) instead of emoji — see `docs/LUXURY_ICONS.md`. Each pill shows an icon (e.g. Drop, Flask, Diamond) and the first word of the benefit. The detail card uses the same icon in a 48px circular container.
+
+Orbit sizing:
 
 ```typescript
-const PODIUM_W = SW - 40;           // 20px padding each side
-const CX = PODIUM_W / 2;            // Center X
-const PILL_HALF_W = 55;             // Half of average pill width (~110px)
-const ORB_RX = CX - PILL_HALF_W + 10;  // Horizontal radius
+const PILL_R = 36;                  // Pill circle radius (72px diameter)
+const ORB_RX = CX - PILL_R + 10;    // Horizontal radius
 const ORB_RY = SW * 0.34;           // Vertical radius
 ```
 
-- Pills are sized `minWidth: 80`, `maxWidth: 120`
-- Left and right pills stay within screen bounds
-- Orbit radius scales with screen width
+- Pills are 72×72px dark circles with gold border/glow when selected
+- `pillIconWrap` holds the icon; `pillLabel` shows the short text
+- Detail card uses `detailIconWrap` (48px circle, gold-tinted bg) for the selected benefit icon
 
 ### ProductHeroCard
 
@@ -133,6 +133,24 @@ Product reviews section:
 - Star rating display
 - Write/edit/delete own review (when logged in)
 - Review list with user avatars
+
+## Luxury Icons
+
+### LuxuryIcon
+
+Reusable icon component backed by Phosphor Icons; used for benefit pills and detail cards on the product page.
+
+```typescript
+import { LuxuryIcon } from '../constants/luxuryIcons';
+
+<LuxuryIcon name="hydration" size={20} color={colors.gold[500]} weight="duotone" />
+```
+
+- **name**: One of the keys in `constants/luxuryIcons.tsx` (e.g. `sparkle`, `hydration`, `science`, `premium`).
+- **size**, **color**, **weight**: Pass-through to Phosphor; default weight is `duotone` for a premium look.
+- **Keyword matching**: `matchBenefitIcon(text)` and `getCycleIcon(index)` map benefit copy to icon names.
+
+See `docs/LUXURY_ICONS.md` for the full icon set and keyword map.
 
 ## Utility Components
 

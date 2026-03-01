@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -23,6 +23,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
   withSequence,
+  withSpring,
   Easing,
 } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
@@ -37,6 +38,7 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import InteractivePodium from '../../components/product/InteractivePodium';
 import GlassCard from '../../components/ui/GlassCard';
 import ProductReviews from '../../components/product/ProductReviews';
+import GoldShimmerText from '../../components/ui/GoldShimmerText';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -71,7 +73,8 @@ function parseSafeArray(val: unknown): any[] {
 export default function ProductPodiumScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user, token } = useAuth();
-  const { addItem } = useCart();
+  const cart = useCart();
+  const { addItem } = cart;
   const { isFavorite, toggleFavorite } = useFavorites();
 
   const insets = useSafeAreaInsets();
@@ -79,7 +82,6 @@ export default function ProductPodiumScreen() {
   const [loading, setLoading] = useState(true);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [appMethodOpen, setAppMethodOpen] = useState(false);
-  const shimmer = useSharedValue(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -115,29 +117,98 @@ export default function ProductPodiumScreen() {
     size: (apiProduct as any).size || '',
     skinType: (apiProduct as any).skinType || '',
     usage: (apiProduct as any).usage || '',
+    origin: (apiProduct as any).origin || '',
   } : null;
 
   const productId = id || '';
   const favorited = isFavorite(productId);
+  const { items, itemCount } = cart;
+  const qtyInBag = items.filter(i => i.id === productId).reduce((s, i) => s + i.quantity, 0);
+  const isInBag = qtyInBag > 0;
+
+  const shimmer = useSharedValue(0);
+  const badgeScale = useSharedValue(itemCount > 0 ? 1 : 0);
+  const qtyScale = useSharedValue(1);
+
+  useEffect(() => {
+    badgeScale.value = itemCount > 0
+      ? withSpring(1, { damping: 12, stiffness: 200 })
+      : withTiming(0, { duration: 200 });
+  }, [itemCount]);
 
   const shimmerStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: shimmer.value }],
   }));
 
-  const handleAddToCart = () => {
-    if (!product) return;
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    addItem({
+  const qtyAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: qtyScale.value }],
+  }));
+
+  const badgeAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: badgeScale.value }],
+  }));
+
+  const morphLayout = useCallback(() => {
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(250, 'easeInEaseOut', 'opacity'),
+    );
+  }, []);
+
+  const cartPayload = useCallback(() => {
+    if (!product) return null;
+    return {
       id: productId,
       name: product.name,
       price: product.price,
       salePrice: product.originalPrice !== product.price ? product.price : undefined,
       currency: product.currency,
       imageUrl: product.imageUrl,
-    });
+    };
+  }, [product, productId]);
+
+  const handleAddToCart = useCallback(() => {
+    const payload = cartPayload();
+    if (!payload) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    morphLayout();
+    addItem(payload);
     shimmer.value = -250;
     shimmer.value = withTiming(250, { duration: 600, easing: Easing.out(Easing.cubic) });
-  };
+    badgeScale.value = withSequence(
+      withTiming(1.35, { duration: 120 }),
+      withSpring(1, { damping: 10, stiffness: 250 }),
+    );
+  }, [cartPayload, addItem, morphLayout]);
+
+  const handleIncrement = useCallback(() => {
+    const payload = cartPayload();
+    if (!payload) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    addItem(payload);
+    qtyScale.value = withSequence(
+      withTiming(1.3, { duration: 100 }),
+      withSpring(1, { damping: 12, stiffness: 300 }),
+    );
+    badgeScale.value = withSequence(
+      withTiming(1.35, { duration: 120 }),
+      withSpring(1, { damping: 10, stiffness: 250 }),
+    );
+  }, [cartPayload, addItem]);
+
+  const handleDecrement = useCallback(() => {
+    if (qtyInBag <= 0) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (qtyInBag === 1) {
+      morphLayout();
+      cart.removeItem(productId);
+    } else {
+      cart.updateQuantity(productId, qtyInBag - 1);
+      qtyScale.value = withSequence(
+        withTiming(0.7, { duration: 100 }),
+        withSpring(1, { damping: 12, stiffness: 300 }),
+      );
+    }
+  }, [qtyInBag, productId, cart, morphLayout]);
 
   const handleToggleFavorite = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -199,10 +270,24 @@ export default function ProductPodiumScreen() {
           <TouchableOpacity onPress={() => router.back()} style={styles.navBtn}>
             <Ionicons name="arrow-back" size={22} color={colors.text.primary} />
           </TouchableOpacity>
-          <Text style={styles.navTitle}>GENOSYS</Text>
-          <TouchableOpacity style={styles.navBtn} onPress={handleShare}>
-            <Ionicons name="share-outline" size={22} color={colors.text.primary} />
-          </TouchableOpacity>
+
+          {/* Centered title — absolute so it ignores left/right widths */}
+          <View style={styles.navTitleWrap} pointerEvents="none">
+            <GoldShimmerText text="GENOSYS" style={styles.navTitle} shimmerInterval={7000} />
+          </View>
+
+          <View style={styles.navRight}>
+            <TouchableOpacity style={styles.navBtn} onPress={handleToggleFavorite}>
+              <Ionicons
+                name={favorited ? 'heart' : 'heart-outline'}
+                size={21}
+                color={favorited ? '#FF3B30' : colors.text.secondary}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.navBtn} onPress={handleShare}>
+              <Ionicons name="share-outline" size={21} color={colors.text.primary} />
+            </TouchableOpacity>
+          </View>
         </Animated.View>
 
         <ScrollView
@@ -279,39 +364,60 @@ export default function ProductPodiumScreen() {
                 <Ionicons
                   name={aboutOpen ? 'chevron-up' : 'chevron-down'}
                   size={18}
-                  color={colors.text.tertiary}
+                  color={colors.gold[500]}
                 />
               </TouchableOpacity>
               {aboutOpen && (
                 <>
-                  <Text style={styles.descriptionText}>{product.description}</Text>
+                  {/* Luxury formatted description */}
+                  {(() => {
+                    const sentences = product.description
+                      .split(/(?<=[.!])\s+/)
+                      .map((s: string) => s.trim())
+                      .filter((s: string) => s.length > 5);
+                    if (sentences.length === 0) return null;
+                    const lead = sentences[0];
+                    const rest = sentences.slice(1).join(' ');
+                    return (
+                      <View style={styles.descBody}>
+                        <View style={styles.descLeadRow}>
+                          <View style={styles.descAccent} />
+                          <Text style={styles.descLead}>{lead}</Text>
+                        </View>
+                        {rest ? <Text style={styles.descRest}>{rest}</Text> : null}
+                      </View>
+                    );
+                  })()}
 
                   {/* Product specs */}
-                  {(product.size || product.skinType || product.usage) && (
-                    <View style={styles.specsGrid}>
-                      {product.size ? (
-                        <View style={styles.specItem}>
-                          <Ionicons name="resize-outline" size={14} color={colors.gold[500]} />
-                          <Text style={styles.specLabel}>Size</Text>
-                          <Text style={styles.specValue}>{product.size}</Text>
-                        </View>
-                      ) : null}
-                      {product.skinType ? (
-                        <View style={styles.specItem}>
-                          <Ionicons name="water-outline" size={14} color={colors.gold[500]} />
-                          <Text style={styles.specLabel}>Skin Type</Text>
-                          <Text style={styles.specValue}>{product.skinType}</Text>
-                        </View>
-                      ) : null}
-                      {product.usage ? (
-                        <View style={styles.specItem}>
-                          <Ionicons name="time-outline" size={14} color={colors.gold[500]} />
-                          <Text style={styles.specLabel}>Usage</Text>
-                          <Text style={styles.specValue}>{product.usage.replace(/-/g, ' ')}</Text>
-                        </View>
-                      ) : null}
+                  <View style={styles.specsGrid}>
+                    {product.size ? (
+                      <View style={styles.specItem}>
+                        <Ionicons name="resize-outline" size={14} color={colors.gold[500]} />
+                        <Text style={styles.specLabel}>Size</Text>
+                        <Text style={styles.specValue}>{product.size}</Text>
+                      </View>
+                    ) : null}
+                    {product.skinType ? (
+                      <View style={styles.specItem}>
+                        <Ionicons name="water-outline" size={14} color={colors.gold[500]} />
+                        <Text style={styles.specLabel}>Skin Type</Text>
+                        <Text style={styles.specValue}>{product.skinType}</Text>
+                      </View>
+                    ) : null}
+                    {product.usage ? (
+                      <View style={styles.specItem}>
+                        <Ionicons name="time-outline" size={14} color={colors.gold[500]} />
+                        <Text style={styles.specLabel}>Usage</Text>
+                        <Text style={styles.specValue}>{product.usage.replace(/-/g, ' ')}</Text>
+                      </View>
+                    ) : null}
+                    <View style={styles.specItem}>
+                      <Text style={styles.specFlag}>🇰🇷</Text>
+                      <Text style={styles.specLabel}>Origin</Text>
+                      <Text style={styles.specValue}>{product.origin || 'South Korea'}</Text>
                     </View>
-                  )}
+                  </View>
                 </>
               )}
             </GlassCard>
@@ -336,26 +442,37 @@ export default function ProductPodiumScreen() {
                   <Ionicons
                     name={appMethodOpen ? 'chevron-up' : 'chevron-down'}
                     size={18}
-                    color={colors.text.tertiary}
+                    color={colors.gold[500]}
                     style={{ marginLeft: 'auto' }}
                   />
                 </TouchableOpacity>
                 {appMethodOpen && (
                   <>
                     {product.howToUse ? (
-                      <View style={styles.appSteps}>
-                        {parseApplicationSteps(product.howToUse).map((step, i) => (
+                      <View style={styles.appTimeline}>
+                        {parseApplicationSteps(product.howToUse).map((step, i, arr) => (
                           <View key={i} style={styles.appStep}>
-                            <View style={styles.appStepNum}>
-                              <Text style={styles.appStepNumText}>{i + 1}</Text>
+                            {/* Timeline rail */}
+                            <View style={styles.appRail}>
+                              <View style={styles.appDot}>
+                                <Text style={styles.appDotText}>{i + 1}</Text>
+                              </View>
+                              {i < arr.length - 1 && <View style={styles.appLine} />}
                             </View>
-                            <Text style={styles.appStepText}>{step}</Text>
+                            {/* Step content */}
+                            <View style={styles.appStepBody}>
+                              <Text style={styles.appStepLabel}>Step {i + 1}</Text>
+                              <Text style={styles.appStepText}>{step}</Text>
+                            </View>
                           </View>
                         ))}
                       </View>
                     ) : null}
                     {product.directions && !product.howToUse ? (
-                      <Text style={styles.appDirections}>{product.directions}</Text>
+                      <View style={styles.appDirWrap}>
+                        <View style={styles.descAccent} />
+                        <Text style={styles.appDirections}>{product.directions}</Text>
+                      </View>
                     ) : null}
                     {product.directions && product.howToUse ? (
                       <View style={styles.appNote}>
@@ -404,7 +521,6 @@ export default function ProductPodiumScreen() {
                         />
                       );
                     })}
-                    <Text style={styles.ingredientExplore}>Explore →</Text>
                   </View>
                 </GlassCard>
               </TouchableOpacity>
@@ -440,30 +556,58 @@ export default function ProductPodiumScreen() {
             {/* Divider */}
             <View style={styles.bottomDivider} />
 
-            {/* Add to Bag */}
-            <TouchableOpacity
-              style={styles.bottomBagBtn}
-              activeOpacity={0.7}
-              onPress={handleAddToCart}
-            >
-              <Ionicons name="bag-add-outline" size={18} color={colors.gold[500]} />
-              <Text style={styles.bottomBagText}>Add to Bag</Text>
-            </TouchableOpacity>
+            {/* Morphing: Add to Bag ↔ Stepper */}
+            {isInBag ? (
+              <View style={styles.stepperRow}>
+                {/* Minus / Trash */}
+                <TouchableOpacity
+                  style={styles.stepperBtn}
+                  activeOpacity={0.6}
+                  onPress={handleDecrement}
+                >
+                  <Ionicons name="remove" size={17} color={colors.gold[500]} />
+                </TouchableOpacity>
+
+                {/* Quantity */}
+                <Animated.View style={[styles.qtyWrap, qtyAnimStyle]}>
+                  <Text style={styles.qtyNum}>{qtyInBag}</Text>
+                </Animated.View>
+
+                {/* Plus */}
+                <TouchableOpacity
+                  style={styles.stepperBtn}
+                  activeOpacity={0.6}
+                  onPress={handleIncrement}
+                >
+                  <Ionicons name="add" size={17} color={colors.gold[500]} />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.addBtnTouch}
+                activeOpacity={0.7}
+                onPress={handleAddToCart}
+              >
+                <Ionicons name="bag-add-outline" size={18} color={colors.gold[500]} />
+                <Text style={styles.addBtnText}>Add to Bag</Text>
+              </TouchableOpacity>
+            )}
 
             {/* Divider */}
             <View style={styles.bottomDivider} />
 
-            {/* Favorite */}
+            {/* Bag icon with count — navigates to cart */}
             <TouchableOpacity
-              style={styles.bottomFavBtn}
+              style={styles.bottomCartBtn}
               activeOpacity={0.7}
-              onPress={handleToggleFavorite}
+              onPress={() => router.push('/(tabs)/bag')}
             >
-              <Ionicons
-                name={favorited ? 'heart' : 'heart-outline'}
-                size={20}
-                color={favorited ? '#FF3B30' : colors.text.secondary}
-              />
+              <Ionicons name="bag-handle-outline" size={20} color={colors.text.secondary} />
+              {itemCount > 0 && (
+                <Animated.View style={[styles.cartBadge, badgeAnimStyle]}>
+                  <Text style={styles.cartBadgeText}>{itemCount > 99 ? '99+' : itemCount}</Text>
+                </Animated.View>
+              )}
             </TouchableOpacity>
           </View>
 
@@ -484,9 +628,11 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: layout.screenPadding },
 
-  topNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: layout.screenPadding, paddingVertical: spacing.sm },
-  navBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  navTitle: { ...typography.headline, letterSpacing: 3, fontSize: 15 },
+  topNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: layout.screenPadding, paddingVertical: spacing.sm, position: 'relative' },
+  navBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', zIndex: 2 },
+  navTitleWrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center', zIndex: 1 },
+  navTitle: { letterSpacing: 4, fontSize: 24, fontWeight: '700' },
+  navRight: { flexDirection: 'row', alignItems: 'center', zIndex: 2 },
 
 
   infoSection: { alignItems: 'center', marginTop: spacing.lg, marginBottom: spacing.xxl },
@@ -504,7 +650,31 @@ const styles = StyleSheet.create({
   descriptionSection: { marginBottom: spacing.lg },
   expandHeader: { flexDirection: 'row', alignItems: 'center' },
   descriptionTitle: { ...typography.headline, flex: 1 },
-  descriptionText: { ...typography.body, color: colors.text.secondary, lineHeight: 24, marginTop: spacing.sm },
+  descBody: { marginTop: spacing.md },
+  descLeadRow: { flexDirection: 'row', gap: 10 },
+  descAccent: {
+    width: 2.5,
+    marginTop: 3,
+    borderRadius: 1.5,
+    backgroundColor: colors.gold[500],
+    opacity: 0.5,
+  },
+  descLead: {
+    ...typography.body,
+    color: colors.text.primary,
+    lineHeight: 24,
+    flex: 1,
+    fontWeight: '500',
+    letterSpacing: 0.2,
+  },
+  descRest: {
+    ...typography.body,
+    color: colors.text.tertiary,
+    lineHeight: 22,
+    marginTop: spacing.md,
+    fontSize: 14,
+    letterSpacing: 0.15,
+  },
   specsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -523,6 +693,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     gap: 6,
   },
+  specFlag: { fontSize: 13 },
   specLabel: {
     ...typography.caption2,
     color: colors.text.tertiary,
@@ -547,22 +718,46 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
   },
   appTitle: { ...typography.headline, letterSpacing: 0.5 },
-  appSteps: { gap: spacing.md, marginTop: spacing.md },
-  appStep: { flexDirection: 'row', alignItems: 'flex-start' },
-  appStepNum: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+  appTimeline: { marginTop: spacing.lg },
+  appStep: { flexDirection: 'row' },
+  appRail: { alignItems: 'center', width: 28, marginRight: spacing.md },
+  appDot: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: 'rgba(201, 169, 110, 0.10)',
     borderWidth: 1,
-    borderColor: colors.gold[500],
+    borderColor: 'rgba(201, 169, 110, 0.35)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spacing.sm,
-    marginTop: 1,
   },
-  appStepNumText: { fontSize: 11, fontWeight: '700', color: colors.gold[500] },
-  appStepText: { ...typography.body, color: colors.text.secondary, lineHeight: 22, flex: 1 },
-  appDirections: { ...typography.body, color: colors.text.secondary, lineHeight: 22, marginTop: spacing.md },
+  appDotText: { fontSize: 11, fontWeight: '700', color: colors.gold[500] },
+  appLine: {
+    width: 1.5,
+    flex: 1,
+    backgroundColor: 'rgba(201, 169, 110, 0.12)',
+    marginVertical: 4,
+    borderRadius: 1,
+  },
+  appStepBody: { flex: 1, paddingBottom: spacing.xl },
+  appStepLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.gold[500],
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+    opacity: 0.7,
+  },
+  appStepText: {
+    ...typography.body,
+    color: colors.text.secondary,
+    lineHeight: 22,
+    fontSize: 14,
+    letterSpacing: 0.15,
+  },
+  appDirWrap: { flexDirection: 'row', gap: 10, marginTop: spacing.md },
+  appDirections: { ...typography.body, color: colors.text.secondary, lineHeight: 22, flex: 1 },
   appNote: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -579,7 +774,6 @@ const styles = StyleSheet.create({
   ingredientSubtitle: { ...typography.caption1, color: colors.gold[500], marginTop: 2 },
   ingredientDots: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   ingredientDot: { borderRadius: radius.circle, opacity: 0.8 },
-  ingredientExplore: { ...typography.label, color: colors.gold[500], marginLeft: 'auto' },
 
   bottomBar: {
     position: 'absolute',
@@ -625,24 +819,72 @@ const styles = StyleSheet.create({
     backgroundColor: colors.glass.border,
     marginHorizontal: spacing.lg,
   },
-  bottomBagBtn: {
+  addBtnTouch: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
   },
-  bottomBagText: {
+  addBtnText: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.gold[500],
     letterSpacing: 0.5,
   },
-  bottomFavBtn: {
-    width: 36,
-    height: 36,
+  stepperRow: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 4,
+  },
+  stepperBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    borderColor: 'rgba(201, 169, 110, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperBtnDanger: {
+    borderColor: 'rgba(255, 69, 58, 0.25)',
+  },
+  qtyWrap: {
+    width: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  qtyNum: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.gold[500],
+    fontVariant: ['tabular-nums'] as any,
+    letterSpacing: 0.5,
+  },
+  bottomCartBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cartBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 0,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.gold[500],
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  cartBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#000',
   },
   shimmerTrack: {
     height: 1.5,
